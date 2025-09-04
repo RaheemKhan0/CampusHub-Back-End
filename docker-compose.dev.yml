@@ -18,13 +18,13 @@ services:
       - "4000:4000"
     environment:
       PORT: 4000
-      MONGO_URI: mongodb://mongo:27017/campus_hub
-      CORS_ORIGIN: http://localhost:3000
     volumes:
       - ../campushub-backend:/app
       - /app/node_modules
     depends_on:
       - mongo
+    env_file:
+      - ../campushub-backend/.env
 
   frontend:
     build:
@@ -33,15 +33,13 @@ services:
     container_name: campus-web
     ports:
       - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4000
-      CHOKIDAR_USEPOLLING: "true"     # ensures hot reload works on Docker Desktop
-      WATCHPACK_POLLING: "true"
     volumes:
       - ../campushub-frontend:/app
       - /app/node_modules
     depends_on:
       - backend
+    env_file:
+      - ../campushub-frontend/.env
 
 volumes:
   mongo_data:
