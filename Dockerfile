@@ -1,6 +1,6 @@
 # ---- development ----
-FROM node:20-alpine AS dev 
-WORkDIR /app
+FROM node:20-bullseye-slim AS dev
+WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .

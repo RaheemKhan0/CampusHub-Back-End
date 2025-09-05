@@ -8,7 +8,7 @@ export const mongoClient = new MongoClient(mongoUri);
 // Optional: choose DB explicitly via MONGO_DB (otherwise URI's db is used)
 export const db = mongoClient.db(process.env.MONGO_DB || undefined);
 
-const auth = betterAuth({
+export const auth = betterAuth({
   basePath: "/api/auth",
   trustedOrigins: [process.env.CORS_ORIGIN ?? "http://localhost:3000"],
   database: mongodbAdapter(db),
@@ -51,4 +51,3 @@ const auth = betterAuth({
     }),
   },
 });
-export type AuthType = typeof auth;
