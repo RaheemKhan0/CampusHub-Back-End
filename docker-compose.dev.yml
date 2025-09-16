@@ -1,21 +1,21 @@
-version: "3.9"
+version: '3.9'
 
 services:
   mongo:
     image: mongo:7
     container_name: campus-mongo
     ports:
-      - "27017:27017"   # so host can also connect (e.g., compass)
+      - '27017:27017' # so host can also connect (e.g., compass)
     volumes:
       - mongo_data:/data/db
 
   backend:
     build:
-      context: ../campushub-backend    # adjust if compose file is not inside backend repo
+      context: ../campushub-backend # adjust if compose file is not inside backend repo
       target: dev
     container_name: campus-api
     ports:
-      - "4000:4000"
+      - '4000:4000'
     environment:
       PORT: 4000
     volumes:
@@ -31,8 +31,12 @@ services:
       context: ../campushub-frontend
       target: dev
     container_name: campus-web
+    environment:
+      # Often needed on Docker Desktop so file changes are seen
+      CHOKIDAR_USEPOLLING: 'true'
+      WATCHPACK_POLLING: 'true'
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ../campushub-frontend:/app
       - frontend_node_modules:/app/node_modules
@@ -45,4 +49,3 @@ volumes:
   mongo_data:
   backend_node_modules:
   frontend_node_modules:
-
