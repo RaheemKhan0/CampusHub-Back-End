@@ -16,5 +16,5 @@ const CredentialsSchema = new Schema<ICredentials>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export const Credentials = mongoose.model<ICredentials>("Credentials", CredentialsSchema);
+export const Credentials = mongoose.models.Credentials || mongoose.model<ICredentials>("Credentials", CredentialsSchema);
 

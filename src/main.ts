@@ -1,13 +1,35 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from './modules/app/app.module';
 import morgan from 'morgan';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/betterauth';
-
+import attachUserSession from './middleware/attach-user-session';
+import { connectDB } from './lib/connectMongodb';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
+  await connectDB();
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+  const config = new DocumentBuilder()
+    .setTitle('Campus Hub API')
+    .setDescription('REST API for Campus Hub')
+    .setVersion('1.0.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+  app.use('/api-json', (_req, res) => res.json(document));
+
   app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
   app.enableCors({
     origin: ['http://localhost:3000'],
@@ -16,7 +38,8 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.use(morgan('dev'));
   // Better Auth routes
-  expressApp.all('/api/auth', toNodeHandler(auth));
+  expressApp.all('/api/auth/*splat', toNodeHandler(auth));
+  expressApp.use(attachUserSession);
 
   await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }
