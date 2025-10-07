@@ -6,6 +6,7 @@ import {
   Post,
   UseGuards,
   Param,
+  Query,
 } from '@nestjs/common';
 import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
 import { ServerRolesGuard } from 'src/lib/guards/server-role.guard';
@@ -14,28 +15,85 @@ import { UserAuth } from 'src/lib/decorators/auth-user';
 import { CreateServerDto } from './dto/create-server.dto';
 import { ServerRole } from 'src/lib/decorators/server-roles.decorator';
 import { UpdateServerDto } from './dto/update-server.dto';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
+import { ServerViewDto } from './dto/server-view.dto';
+import { ListServersQueryDto } from './dto/list-server.query.dto';
+import { ServerListResponseDto } from './dto/server-list.dto';
 
-@Controller('server')
-@UseGuards(AuthSessionGuard)
+@ApiTags('servers')
+@Controller('servers')
 export class ServerController {
   constructor(private readonly servers: ServerService) {}
 
-  @Post('create')
+  @Post()
+  @ApiOperation({
+    summary: 'Create a new Server',
+    description: 'Creates a new Server and returns its public view',
+  })
+  @ApiCreatedResponse({
+    type: ServerViewDto,
+    description: 'The created Server',
+  })
   async createServer(
     @UserAuth() user: { id: string; email: string },
     @Body() dto: CreateServerDto,
   ) {
-    return this.servers.create(user.id, dto);
+    const doc = await this.servers.create(user.id, dto);
+    return this.servers.toServerView(doc);
   }
 
-  @Patch('update/:serverId')
+  @Get()
+  @ApiOperation({
+    summary: 'lists all the servers in a particular type',
+  })
+  @ApiOkResponse({
+    type: ServerListResponseDto,
+    description: 'Paginated list of servers',
+  })
+  async listServer(
+    @Query() query: ListServersQueryDto,
+  ): Promise<ServerListResponseDto> {
+    return this.servers.list(query);
+  }
+
+  @Get(':serverId')
+  @ApiOperation({ summary: 'Retrieve a server by id' })
+  @ApiParam({ name: 'serverId', type: String })
+  @ApiOkResponse({
+    type: ServerViewDto,
+    description: 'The requested Server',
+  })
+  async getServer(
+    @UserAuth() user: { id: string; email: string },
+    @Param('serverId') serverId: string,
+  ) {
+    const doc = await this.servers.findById(serverId, user.id);
+    return this.servers.toServerView(doc);
+  }
+
+  @Patch(':serverId')
+  @ApiOperation({
+    summary: 'updating an existing Server',
+    description: 'This updates the existing Server and return its public view',
+  })
+  @ApiOkResponse({
+    type: ServerViewDto,
+    description: 'The updated Server',
+  })
   @UseGuards(ServerRolesGuard)
   @ServerRole('owner', 'admin')
   async update(
-    @UserAuth() user: { id: string },
+    @UserAuth() user: { id: string; email: string },
     @Param('serverId') serverId: string,
     @Body() dto: UpdateServerDto,
   ) {
-    this.servers.update(serverId, user.id, dto)
+    const doc = await this.servers.update(serverId, user.id, dto);
+    return this.servers.toServerView(doc);
   }
 }

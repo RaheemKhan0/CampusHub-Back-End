@@ -20,6 +20,7 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
   const config = new DocumentBuilder()
     .setTitle('Campus Hub API')
     .setDescription('REST API for Campus Hub')

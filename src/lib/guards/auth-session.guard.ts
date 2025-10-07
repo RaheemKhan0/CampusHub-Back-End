@@ -6,6 +6,7 @@ export class AuthSessionGuard implements CanActivate {
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest<Request>();
     const cookie = req.headers.cookie ?? '';
+    console.log('[AuthSessionGuard] [Guard] cookie : ', cookie)
     if (!cookie) throw new UnauthorizedException('Missing auth cookie');
 
     const base = process.env.BETTER_AUTH_URL ?? 'http://localhost:4000';
@@ -13,6 +14,7 @@ export class AuthSessionGuard implements CanActivate {
       method: 'GET',
       headers: { Cookie: cookie },
     });
+    console.log('[AuthSessionGuard] [Guard] better authresponse : ', r);
 
     if (!r.ok) throw new UnauthorizedException('Invalid session');
     const json = await r.json();

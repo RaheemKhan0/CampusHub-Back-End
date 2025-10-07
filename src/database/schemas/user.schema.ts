@@ -1,15 +1,18 @@
 import mongoose, { Schema, Types, Document } from 'mongoose';
 
 export interface IUser extends Document {
+  userId: string; // BA user Id
   email: string; // lowercased, unique
   name: string;
   emailVerified: boolean; // must be true to sign in
+  isSuper : boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const UserSchema = new Schema<IUser>(
+const AppUserSchema = new Schema<IUser>(
   {
+    userId: { type: String, required: true, unique: true },
     email: {
       type: String,
       required: true,
@@ -17,12 +20,14 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
+
     name: { type: String, required: true },
     emailVerified: { type: Boolean, default: false },
+    isSuper: { type : Boolean, default : false, required : true},
   },
   { timestamps: true },
 );
-UserSchema.pre('save', function(next) {
+AppUserSchema.pre('save', function (next) {
   const email = this.email?.toLowerCase() || '';
   if (!/@city\.ac\.uk$/i.test(email)) {
     return next(new Error('Only @city.ac.uk emails are allowed.'));
@@ -31,6 +36,6 @@ UserSchema.pre('save', function(next) {
 });
 
 // Helpful compound index if you’ll often filter by verified users
-UserSchema.index({ emailVerified: 1, email: 1 });
+AppUserSchema.index({ emailVerified: 1, email: 1 });
 
-export const User = mongoose.model<IUser>('User', UserSchema);
+export const AppUser = mongoose.model<IUser>('AppUser', AppUserSchema);

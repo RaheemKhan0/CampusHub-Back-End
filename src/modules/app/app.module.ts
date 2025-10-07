@@ -5,9 +5,10 @@ import { AuthGuard, AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from 'src/lib/betterauth';
 import { APP_GUARD } from '@nestjs/core';
 import { ServerModule } from '../server/server.module';
+import { ChannelModule } from '../channels/channels.module';
 
 @Module({
-  imports: [AuthModule.forRoot(auth), ServerModule],
+  imports: [AuthModule.forRoot(auth), ServerModule, ChannelModule],
   controllers: [AppController],
   providers: [
     AppService,

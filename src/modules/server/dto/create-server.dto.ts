@@ -1,13 +1,30 @@
-import { IsString, IsOptional, IsIn, Length } from "class-validator";
+import { ApiProperty , ApiPropertyOptional} from "@nestjs/swagger";
+import { IsString, IsOptional, IsIn, Length, IsUrl } from "class-validator";
 import { ServerTypes } from "src/database/types";
 
 export class CreateServerDto {
+  @ApiProperty({
+    example : "Calisthenics",
+    minLength : 2, 
+    maxLength : 60,
+    description : "We discuss calisthenics",
+  })
   @IsString() @Length(2, 60)
   name! : string;
 
+  @ApiProperty({
+    enum : ServerTypes,
+    enumName : 'ServerType',
+    example : 'personal'
+  })
   @IsString() @IsIn(ServerTypes as unknown as string[])
   type! : typeof ServerTypes[number];
-
-  @IsOptional() @IsString()
+  
+  @ApiPropertyOptional({
+    example : "https://cdn.example.com/icons/cs.png",
+    description : "PUBLIC HTTPS(S) URL to an icon"
+  })
+  @IsOptional()
+  @IsUrl({protocols : ['http', 'https'], require_protocol : true})
   icon? : string;
 }
