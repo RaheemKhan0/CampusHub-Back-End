@@ -8,7 +8,6 @@ import {
   UseGuards,
   Get,
 } from '@nestjs/common';
-import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
 import { ChannelManageGuard } from 'src/lib/guards/channel-manage-guard';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
@@ -16,7 +15,10 @@ import { UserAuth } from 'src/lib/decorators/auth-user';
 import { ChannelListResponseDto } from './dto/channel-list.dto';
 import { ApiOkResponse , ApiCreatedResponse} from '@nestjs/swagger';
 
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
+
 @Controller('servers/:serverId/channels')
+@UseGuards(AuthGuard)
 export class ChannelsController {
   constructor(private readonly channels: ChannelsService) {}
 

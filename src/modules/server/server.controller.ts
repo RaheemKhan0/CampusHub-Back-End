@@ -8,7 +8,6 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
 import { ServerRolesGuard } from 'src/lib/guards/server-role.guard';
 import { ServerService } from './server.service';
 import { UserAuth } from 'src/lib/decorators/auth-user';
@@ -25,9 +24,11 @@ import {
 import { ServerViewDto } from './dto/server-view.dto';
 import { ListServersQueryDto } from './dto/list-server.query.dto';
 import { ServerListResponseDto } from './dto/server-list.dto';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('servers')
 @Controller('servers')
+@UseGuards(AuthGuard)
 export class ServerController {
   constructor(private readonly servers: ServerService) {}
 
