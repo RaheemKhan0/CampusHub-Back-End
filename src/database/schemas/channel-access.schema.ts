@@ -16,6 +16,7 @@ const ChannelAccessSchema = new Schema<IChannelAccess>({
 }, { timestamps: true, versionKey: false, collection: "channel_access" });
 
 ChannelAccessSchema.index({ channelId: 1, userId: 1 }, { unique: true });
+ChannelAccessSchema.index({ userId : 1 });
 
 export const ChannelAccess =
   models.ChannelAccess || model<IChannelAccess>("ChannelAccess", ChannelAccessSchema);

@@ -1,47 +1,87 @@
 // channels.controller.ts
-import { Controller, Post, Body, Param, Delete, UseGuards, Get } from "@nestjs/common";
-import { AuthSessionGuard } from "src/lib/guards/auth-session.guard";
-import { ChannelManageGuard } from "src/lib/guards/channel-manage-guard";
-import { ChannelsService } from "./channels.service";
-import { CreateChannelDto } from "./dto/create-channel.dto";
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
+import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
+import { ChannelManageGuard } from 'src/lib/guards/channel-manage-guard';
+import { ChannelsService } from './channels.service';
+import { CreateChannelDto } from './dto/create-channel.dto';
+import { UserAuth } from 'src/lib/decorators/auth-user';
+import { ChannelListResponseDto } from './dto/channel-list.dto';
+import { ApiOkResponse , ApiCreatedResponse} from '@nestjs/swagger';
 
-
-@Controller("servers/:serverId/channels")
-@UseGuards(AuthSessionGuard)
+@Controller('servers/:serverId/channels')
 export class ChannelsController {
   constructor(private readonly channels: ChannelsService) {}
 
-  // Create channel (only owner/admin; you can reuse ServerRolesGuard instead if you prefer)
   @Post()
   @UseGuards(ChannelManageGuard)
-  createChannel(
-    @Param("serverId") serverId: string,
-    @Body() dto: CreateChannelDto,
-  ) {
+  create(@Param('serverId') serverId: string, @Body() dto: CreateChannelDto) {
     return this.channels.create(serverId, dto);
   }
 
-  // Add member to hidden channel
-  @Post(":channelId/addmember")
-  @UseGuards(ChannelManageGuard)
-  addMember(
-    @Param("channelId") channelId: string,
-    @Body() body: { userId: string }
-  ) {
-    return this.channels.addMember(channelId, body.userId);
+  @Get()
+  @ApiOkResponse({
+    type : ChannelListResponseDto,
+    description : 'returns a channel list visible to the user',
+  })
+  list(
+    @Param('serverId') serverId: string,
+    @UserAuth() user: { id: string },
+  )  : Promise<ChannelListResponseDto>{
+    return this.channels.listVisible(user.id, serverId);
   }
 
-  // Remove member
-  @Delete(":channelId/members/:userId")
+  @Post(':channelId/members')
   @UseGuards(ChannelManageGuard)
-  removeMember(@Param("channelId") channelId: string, @Param("userId") userId: string) {
+ @ApiCreatedResponse({
+    description : "returns when adding a member in ther channel if the channel is hidden",
+  }) 
+  addMembers(
+    @Param('channelId') channelId: string,
+    @Body() body: { userId: string },
+  ) {
+    const ids = body.userId;
+    return this.channels.addMember(channelId, ids);
+  }
+
+  @Delete(':channelId/members/:userId')
+  @UseGuards(ChannelManageGuard)
+  @ApiOkResponse({
+    description : "this handler deletes a member from the channel"
+  })
+  removeMember(
+    @Param('channelId') channelId: string,
+    @Param('userId') userId: string,
+  ) {
     return this.channels.removeMember(channelId, userId);
   }
-
-  // List channels visible to the current user in this server
-  @Get("visible")
-  listVisible(@Param("serverId") serverId: string) {
-    return this.channels.listVisible(serverId);
-  }
+  /*
+    @Patch(':channelId')
+    @UseGuards(ChannelManageGuard)
+    update(
+      @Param('serverId') serverId: string,
+      @Param('channelId') channelId: string,
+      @Body() dto: UpdateChannelDto,
+    ) {
+      return this.channels.update(serverId, channelId, dto);
+    }
+    */
+  /*
+    @Patch(':channelId/position')
+    @UseGuards(ChannelManageGuard)
+    reorder(
+      @Param('serverId') serverId: string,
+      @Param('channelId') channelId: string,
+      @Body() dto: { position: number },
+    ) {
+      return this.channels.reorder(serverId, channelId, dto.position);
+    }
+    */
 }
-

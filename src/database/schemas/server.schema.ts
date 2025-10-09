@@ -4,7 +4,7 @@ import { ServerType, ServerTypes } from '../types';
 export interface IServer extends Document {
   name: string;
   slug: string; // globally unique (single-tenant)
-  ownerId: string; // BetterAuth user id
+  ownerId?: string; // BetterAuth user id, optional for system-owned servers
   icon?: string;
   createdAt: Date;
   type: ServerType;
@@ -22,7 +22,7 @@ const ServerSchema = new Schema<IServer>(
       unique: true,
       index: true,
     },
-    ownerId: { type: String, required: true, index: true },
+    ownerId: { type: String, required: false, index: true },
     icon: { type: String },
     type: {
       type: String,
@@ -31,6 +31,14 @@ const ServerSchema = new Schema<IServer>(
     },
   },
   { timestamps: true, versionKey: false, collection: 'servers' },
+);
+ServerSchema.index(
+  { name: 'text', description: 'text' },
+  {
+    weights: { name: 10, description: 2 },
+    name: 'ServerTextIndex',
+    default_language: 'english',
+  },
 );
 
 export const Server =

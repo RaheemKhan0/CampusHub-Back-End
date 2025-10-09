@@ -5,7 +5,7 @@ import { ChannelType, ChannelTypes } from 'src/database/types';
 export interface IChannel extends Document {
   serverId: Types.ObjectId;
   name: string;
-  type: ChannelType; // 'text' | 'qa'
+  type: ChannelType;
   position: number; // ordering within the server
   privacy: 'public' | 'hidden';
   createdAt?: Date;
@@ -23,8 +23,9 @@ const ChannelSchema = new Schema<IChannel>(
     name: { type: String, required: true, trim: true },
     type: {
       type: String,
-      enum: ChannelTypes as unknown as string[],
+      enum: ChannelTypes,
       required: true,
+      default: 'text',
     },
     position: { type: Number, default: 0 },
     privacy: {
