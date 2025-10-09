@@ -13,9 +13,10 @@ import { ChannelManageGuard } from 'src/lib/guards/channel-manage-guard';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UserAuth } from 'src/lib/decorators/auth-user';
+import { ChannelListResponseDto } from './dto/channel-list.dto';
+import { ApiOkResponse , ApiCreatedResponse} from '@nestjs/swagger';
 
 @Controller('servers/:serverId/channels')
-@UseGuards(AuthSessionGuard)
 export class ChannelsController {
   constructor(private readonly channels: ChannelsService) {}
 
@@ -26,15 +27,22 @@ export class ChannelsController {
   }
 
   @Get()
+  @ApiOkResponse({
+    type : ChannelListResponseDto,
+    description : 'returns a channel list visible to the user',
+  })
   list(
     @Param('serverId') serverId: string,
     @UserAuth() user: { id: string },
-  ) {
+  )  : Promise<ChannelListResponseDto>{
     return this.channels.listVisible(user.id, serverId);
   }
 
   @Post(':channelId/members')
   @UseGuards(ChannelManageGuard)
+ @ApiCreatedResponse({
+    description : "returns when adding a member in ther channel if the channel is hidden",
+  }) 
   addMembers(
     @Param('channelId') channelId: string,
     @Body() body: { userId: string },
@@ -45,6 +53,9 @@ export class ChannelsController {
 
   @Delete(':channelId/members/:userId')
   @UseGuards(ChannelManageGuard)
+  @ApiOkResponse({
+    description : "this handler deletes a member from the channel"
+  })
   removeMember(
     @Param('channelId') channelId: string,
     @Param('userId') userId: string,

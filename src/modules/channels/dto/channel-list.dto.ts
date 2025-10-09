@@ -24,6 +24,4 @@ export class ChannelListResponseDto {
   @ApiProperty({ example: 20 })
   pageSize!: number;
 
-  @ApiProperty({ example : "true" })
-  hasMore !: boolean;
 }

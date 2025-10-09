@@ -12,9 +12,10 @@ See [Repository Guidelines](AGENTS.md) for contributor instructions, coding stan
 
 2. Ensure environment variables are available inside the container (`MONGO_URI`, pool settings, etc.).
 
-3. Run the TypeScript seed directly:
+3. Run the TypeScript seeds directly using npm scripts:
    ```bash
-   node -r ts-node/register -r tsconfig-paths/register src/database/script/seed.ts
+   npm run servers-seed
+   npm run channels-seed
    ```
    Or, if you prefer to run the compiled output:
    ```bash
@@ -22,4 +23,4 @@ See [Repository Guidelines](AGENTS.md) for contributor instructions, coding stan
    node dist/database/script/seed.js
    ```
 
-The seed script upserts the predefined server list from `src/database/script/seed-server-var.ts` so it can be re-run safely.
+`servers-seed` upserts the predefined server list from `src/database/script/seed-server-var.ts`, and `channels-seed` creates the default channel set for every `unimodules` server. Both scripts are idempotent, so you can rerun them safely.
