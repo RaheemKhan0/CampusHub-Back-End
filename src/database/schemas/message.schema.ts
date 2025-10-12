@@ -46,7 +46,6 @@ const MentionSchema = new Schema<IMention>(
 const MessageSchema = new Schema<IMessage>(
   {
     channelId: { type: Schema.Types.ObjectId, ref: 'Channel', index: true },
-    threadId: { type: Schema.Types.ObjectId, ref: 'Thread', index: true },
     authorId: { type: String, required: true, index: true },
     content: { type: String, required: true, trim: true, maxlength: 4000 },
     attachments: { type: [AttachmentSchema], default: [] },
@@ -72,7 +71,7 @@ MessageSchema.pre('validate', function(next) {
   next();
 });
 
-export const Message =
+export const Messages =
   mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);
 
 export const Attachment =

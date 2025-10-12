@@ -6,7 +6,6 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { Channel } from 'src/database/schemas/channel.schema';
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
