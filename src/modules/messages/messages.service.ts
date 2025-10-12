@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 
-import { Message } from 'src/database/schemas/message.schema';
-import { Channel } from 'src/database/schemas/channel.schema';
+import { Messages } from 'src/database/schemas/message.schema';
+import { Channel, IChannel } from 'src/database/schemas/channel.schema';
 import { CreateMessageDto } from './dto/message-create.dto';
 import { MessageViewDto } from './dto/message-view.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
+import { IMessage } from 'src/database/schemas/message.schema';
 
 const MAX_PAGE_SIZE = 100;
 
@@ -37,7 +38,7 @@ export class MessagesService {
     if (!channel) throw new NotFoundException('Channel not found');
 
     const now = new Date();
-    const doc = await Message.create({
+    const doc = await Messages.create({
       channelId: channel._id,
       authorId: userId,
       content: dto.content,
@@ -73,18 +74,18 @@ export class MessagesService {
       serverId: serverObjectId,
     })
       .select('_id')
-      .lean();
+      .lean<IChannel>();
     if (!channel) throw new NotFoundException('Channel not found');
 
-    const query = Message.find({ channelId: channel._id })
+    const query = Messages.find({ channelId: channel._id })
       .sort({ createdAt: -1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
-      .lean();
+      .lean<IMessage[]>();
 
     const [items, total] = await Promise.all([
       query,
-      Message.countDocuments({ channelId: channel._id }),
+      Messages.countDocuments({ channelId: channel._id }),
     ]);
 
     const ordered = items.reverse();
