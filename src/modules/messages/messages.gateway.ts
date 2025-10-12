@@ -23,7 +23,7 @@ import { WsAuthGuard } from 'src/lib/guards/WsAuthGuard';
 import { ChannelTargetDto } from './dto/channel-target.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { MessageViewDto } from './dto/message-view.dto';
-import { Channel } from 'src/database/schemas/channel.schema';
+import { Channel, IChannel } from 'src/database/schemas/channel.schema';
 import { Membership } from 'src/database/schemas/membership.schema';
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
 
@@ -158,7 +158,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
       serverId: serverObjectId,
     })
       .select(['_id', 'serverId', 'privacy'])
-      .lean();
+      .lean<IChannel>();
 
     if (!channel) throw new WsException('Channel not found');
 

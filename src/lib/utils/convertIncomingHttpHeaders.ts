@@ -4,7 +4,7 @@ export function toHeaders(input: HeadersInit): Headers {
   return input instanceof Headers ? input : new Headers(input);
 }
 
-export function fromIncomingHttpHeaders(src: IncomingHttpHeaders): Headers {
+export function convertIncomingHttpHeaders(src: IncomingHttpHeaders): Headers {
   const headers = new Headers();
   for (const [key, value] of Object.entries(src)) {
     if (Array.isArray(value)) {
