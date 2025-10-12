@@ -8,7 +8,6 @@ import {
   UseGuards,
   Get,
 } from '@nestjs/common';
-import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
 import { ChannelManageGuard } from 'src/lib/guards/channel-manage-guard';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';

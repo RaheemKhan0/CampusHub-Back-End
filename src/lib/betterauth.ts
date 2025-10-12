@@ -3,6 +3,7 @@ import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { AppUser } from 'src/database/schemas/user.schema';
+import { openAPI } from 'better-auth/plugins';
 const mongoUri = process.env.MONGO_URI ?? '';
 export const mongoClient = new MongoClient(mongoUri);
 // Optional: choose DB explicitly via MONGO_DB (otherwise URI's db is used)
@@ -10,6 +11,7 @@ export const db = mongoClient.db();
 
 export const auth = betterAuth({
   basePath: '/api/auth',
+  plugins: [openAPI()],
   trustedOrigins: [process.env.CORS_ORIGIN ?? 'http://localhost:3000'],
   database: mongodbAdapter(db),
   user: {

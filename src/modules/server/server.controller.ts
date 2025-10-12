@@ -8,7 +8,6 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { AuthSessionGuard } from 'src/lib/guards/auth-session.guard';
 import { ServerRolesGuard } from 'src/lib/guards/server-role.guard';
 import { ServerService } from './server.service';
 import { UserAuth } from 'src/lib/decorators/auth-user';

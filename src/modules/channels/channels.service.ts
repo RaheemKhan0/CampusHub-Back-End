@@ -1,5 +1,5 @@
 // channels.service.ts
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Channel } from 'src/database/schemas/channel.schema';
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
 import { CreateChannelDto } from './dto/create-channel.dto';
