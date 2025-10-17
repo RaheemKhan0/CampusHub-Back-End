@@ -21,6 +21,7 @@ export class MessagesService {
     channelId: string,
     dto: CreateMessageDto,
     userId: string,
+    authorName?: string,
   ): Promise<MessageViewDto> {
     if (!userId) throw new UnauthorizedException('Missing user context');
 
@@ -37,11 +38,17 @@ export class MessagesService {
     }).select('_id');
     if (!channel) throw new NotFoundException('Channel not found');
 
+    const resolvedAuthorName = authorName ?? dto.authorName;
+    if (!resolvedAuthorName) {
+      throw new UnauthorizedException('Missing author name');
+    }
+
     const now = new Date();
     const doc = await Messages.create({
       channelId: channel._id,
       authorId: userId,
       content: dto.content,
+      authorName: resolvedAuthorName,
       attachments: dto.attachments ?? [],
       mentions: dto.mentions ?? [],
       createdAt: now,
@@ -104,6 +111,7 @@ export class MessagesService {
       id: String(doc._id),
       channelId: String(doc.channelId),
       authorId: doc.authorId,
+      authorName: doc.authorName,
       content: doc.content,
       attachments: doc.attachments ?? [],
       mentions: doc.mentions ?? [],

@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 import { connectDB } from "../../lib/connectMongodb";
-import { Server } from "../schemas/server.schema";
+import { ServerModel } from "../schemas/server.schema";
 import { seedServers } from "./seed-server-var";
 
 async function seedServerCollection() {
   await connectDB();
 
   const operations = seedServers.map((seed) =>
-    Server.updateOne(
+    ServerModel.updateOne(
       { slug: seed.slug },
       {
         $setOnInsert: {

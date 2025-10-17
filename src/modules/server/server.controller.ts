@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ServerRolesGuard } from 'src/lib/guards/server-role.guard';
 import { ServerService } from './server.service';
-import { UserAuth } from 'src/lib/decorators/auth-user';
 import { CreateServerDto } from './dto/create-server.dto';
+import { type UserSession , Session } from '@thallesp/nestjs-better-auth';
 import { ServerRole } from 'src/lib/decorators/server-roles.decorator';
 import { UpdateServerDto } from './dto/update-server.dto';
 import {
@@ -40,10 +40,10 @@ export class ServerController {
     description: 'The created Server',
   })
   async createServer(
-    @UserAuth() user: { id: string; email: string },
+    @Session() session: UserSession,
     @Body() dto: CreateServerDto,
   ) {
-    const doc = await this.servers.create(user.id, dto);
+    const doc = await this.servers.create(session.user.id, dto);
     return this.servers.toServerView(doc);
   }
 
@@ -69,10 +69,10 @@ export class ServerController {
     description: 'The requested Server',
   })
   async getServer(
-    @UserAuth() user: { id: string; email: string },
+    @Session() session: UserSession,
     @Param('serverId') serverId: string,
   ) {
-    const doc = await this.servers.findById(serverId, user.id);
+    const doc = await this.servers.findById(serverId, session.user.id);
     return this.servers.toServerView(doc);
   }
 
@@ -88,11 +88,11 @@ export class ServerController {
   @UseGuards(ServerRolesGuard)
   @ServerRole('owner', 'admin')
   async update(
-    @UserAuth() user: { id: string; email: string },
+    @Session() session: UserSession,
     @Param('serverId') serverId: string,
     @Body() dto: UpdateServerDto,
   ) {
-    const doc = await this.servers.update(serverId, user.id, dto);
+    const doc = await this.servers.update(serverId, session.user.id, dto);
     return this.servers.toServerView(doc);
   }
 }

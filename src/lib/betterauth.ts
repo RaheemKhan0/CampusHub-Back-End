@@ -84,9 +84,9 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       // This runs after any auth endpoint. Narrow it to the email sign-up endpoint:
 
-      console.log('Creating an account in the local database');
       if (ctx.path !== '/sign-up/email') return;
 
+      console.log('Creating an account in the local database');
       // After-hooks expose the newly created session here:
       const newSession = ctx.context.newSession;
       const user = newSession?.user; // Better Auth user

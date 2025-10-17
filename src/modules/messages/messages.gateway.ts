@@ -26,12 +26,14 @@ import { MessageViewDto } from './dto/message-view.dto';
 import { Channel, IChannel } from 'src/database/schemas/channel.schema';
 import { Membership } from 'src/database/schemas/membership.schema';
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
+import { IServer, ServerModel } from 'src/database/schemas/server.schema';
 
 const DEFAULT_ORIGIN = 'http://localhost:3000';
 const channelRoom = (channelId: string) => `channel:${channelId}`;
 
 interface GatewayUser {
   id: string;
+  name?: string;
   [key: string]: unknown;
 }
 
@@ -78,6 +80,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: ChannelTargetDto,
   ) {
+    this.logger.debug(
+      `Client ${client.id} joining server ${payload.serverId} channel ${payload.channelId}`,
+    );
     const user = this.getClientUser(client);
     const channel = await this.ensureChannelAccess(
       user.id,
@@ -87,6 +92,8 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     const room = channelRoom(String(channel._id));
     await client.join(room);
+
+    this.logger.debug(`Client ${client.id} joined room ${room}`);
 
     client.emit('channel:joined', {
       serverId: payload.serverId,
@@ -99,10 +106,14 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: ChannelTargetDto,
   ) {
+    this.logger.debug(
+      `Client ${client.id} leaving server ${payload.serverId} channel ${payload.channelId}`,
+    );
     const user = this.getClientUser(client);
     await this.ensureChannelAccess(user.id, payload.serverId, payload.channelId);
     const room = channelRoom(payload.channelId);
     await client.leave(room);
+    this.logger.debug(`Client ${client.id} left room ${room}`);
     client.emit('channel:left', {
       serverId: payload.serverId,
       channelId: payload.channelId,
@@ -115,6 +126,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: SendMessageDto,
   ): Promise<MessageViewDto> {
     const user = this.getClientUser(client);
+    this.logger.debug(
+      `Client ${client.id} creating message in server ${payload.serverId}, channel ${payload.channelId}`,
+    );
     await this.ensureChannelAccess(user.id, payload.serverId, payload.channelId);
 
     const message = await this.messagesService.createMessage(
@@ -122,9 +136,13 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
       payload.channelId,
       payload,
       user.id,
+      user.name ?? payload.authorName,
     );
 
     const room = channelRoom(payload.channelId);
+    this.logger.debug(
+      `Emitting message ${message.id} to room ${room} from client ${client.id}`,
+    );
     this.server.to(room).emit('message:created', message);
 
     return message;
@@ -143,15 +161,23 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     serverId: string,
     channelId: string,
   ) {
+    this.logger.debug(
+      `Verifying access for user ${userId} on server ${serverId} channel ${channelId}`,
+    );
     if (!Types.ObjectId.isValid(channelId)) {
+      this.logger.warn(`Invalid channel id ${channelId}`);
       throw new WsException('Invalid channel id');
     }
     if (!Types.ObjectId.isValid(serverId)) {
+      this.logger.warn(`Invalid server id ${serverId}`);
       throw new WsException('Invalid server id');
     }
 
     const channelObjectId = new Types.ObjectId(channelId);
     const serverObjectId = new Types.ObjectId(serverId);
+
+    const server = await ServerModel.findById(serverId).lean<IServer>();
+
 
     const channel = await Channel.findOne({
       _id: channelObjectId,
@@ -159,16 +185,31 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     })
       .select(['_id', 'serverId', 'privacy'])
       .lean<IChannel>();
+    if (!server) {
+      this.logger.warn(`Server ${serverId} not found for user ${userId}`);
+      throw new WsException('Server not found');
+    }
+    if (!channel) {
+      this.logger.warn(`Channel ${channelId} not found for user ${userId}`);
+      throw new WsException('Channel not found');
+    }
 
-    if (!channel) throw new WsException('Channel not found');
 
     if (channel.privacy === 'public') {
+      if (server.type === 'unimodules') {
+        return channel;
+      }
       const membership = await Membership.exists({
         serverId: channel.serverId,
         userId,
         status: 'active',
       });
-      if (!membership) throw new WsException('Not a member of this server');
+      if (!membership) {
+        this.logger.warn(
+          `User ${userId} not a member of server ${serverId} for public channel ${channelId}`,
+        );
+        throw new WsException('Not a member of this server');
+      }
       return channel;
     }
 
@@ -193,7 +234,12 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
       userId,
     });
 
-    if (!access) throw new WsException('No access to this channel');
+    if (!access) {
+      this.logger.warn(
+        `User ${userId} lacks access to hidden channel ${channelId} on server ${serverId}`,
+      );
+      throw new WsException('No access to this channel');
+    }
 
     return channel;
   }

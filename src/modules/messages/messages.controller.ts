@@ -19,15 +19,16 @@ import { CreateMessageDto } from './dto/message-create.dto';
 import { MessageViewDto } from './dto/message-view.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
 import { ChannelAccessGuard } from 'src/lib/guards/channel-access-guard';
-import { UserAuth } from 'src/lib/decorators/auth-user';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { Session , type UserSession } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('messages')
 @Controller('servers/:serverId/channels/:channelId/messages')
-@UseGuards(AuthGuard, ChannelAccessGuard)
+@UseGuards(AuthGuard)
 export class MessagesController {
   constructor(private readonly messages: MessagesService) {}
 
+  @UseGuards(ChannelAccessGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new message in the channel' })
   @ApiCreatedResponse({ type: MessageViewDto })
@@ -35,9 +36,15 @@ export class MessagesController {
     @Param('serverId') serverId: string,
     @Param('channelId') channelId: string,
     @Body() dto: CreateMessageDto,
-    @UserAuth() user: { id: string },
+    @Session() session : UserSession,
   ): Promise<MessageViewDto> {
-    return this.messages.createMessage(serverId, channelId, dto, user.id);
+    return this.messages.createMessage(
+      serverId,
+      channelId,
+      dto,
+      session.user.id,
+      session.user.name ?? dto.authorName,
+    );
   }
 
   @Get()

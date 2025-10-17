@@ -21,6 +21,12 @@ export class MessageViewDto {
   })
   authorId!: string;
 
+ @ApiProperty({
+    description: 'Name of the Author',
+    example: 'Khan',
+  })
+  authorName !: string;
+
   @ApiProperty({
     description: 'Message Markdown/text content',
     maxLength: 4000,

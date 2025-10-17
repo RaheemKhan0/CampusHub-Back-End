@@ -65,6 +65,16 @@ export class CreateMessageDto {
   content!: string;
 
   @ApiPropertyOptional({
+    description: 'Name of the author (defaults to session user name)',
+    maxLength: 200,
+    example: 'Aaliyah Khan',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  authorName?: string;
+
+  @ApiPropertyOptional({
     description: 'List of attachments associated with this message',
     type: [CreateAttachmentDto],
   })
