@@ -18,6 +18,7 @@ export interface IMessage extends Document {
   threadId?: Types.ObjectId; // ref: Thread
 
   authorId: string; // BetterAuth user id
+  authorName: string;
   content: string;
   attachments: IAttachment[];
   mentions: IMention[];
@@ -47,6 +48,7 @@ const MessageSchema = new Schema<IMessage>(
   {
     channelId: { type: Schema.Types.ObjectId, ref: 'Channel', index: true },
     authorId: { type: String, required: true, index: true },
+    authorName: { type: String, required: true },
     content: { type: String, required: true, trim: true, maxlength: 4000 },
     attachments: { type: [AttachmentSchema], default: [] },
     mentions: { type: [MentionSchema], default: [] },
@@ -62,7 +64,7 @@ MessageSchema.index({ threadId: 1, createdAt: 1 });
 MessageSchema.index({ content: 'text' });
 
 // Enforce XOR: exactly one of channelId or threadId
-MessageSchema.pre('validate', function(next) {
+MessageSchema.pre('validate', function (next) {
   const hasChannel = !!this.channelId;
   const hasThread = !!this.threadId;
   if (hasChannel === hasThread) {

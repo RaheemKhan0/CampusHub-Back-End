@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import { connectDB } from '../../lib/connectMongodb';
-import { Server } from '../schemas/server.schema';
+import { ServerModel } from '../schemas/server.schema';
 import { Channel } from '../schemas/channel.schema';
 
 const DEFAULT_CHANNELS = [
@@ -14,7 +14,7 @@ const DEFAULT_CHANNELS = [
 async function seedChannelsForUnimoduleServers() {
   await connectDB();
 
-  const servers = await Server.find({ type: 'unimodules' })
+  const servers = await ServerModel.find({ type: 'unimodules' })
     .select('_id name slug')
     .lean()
     .exec();

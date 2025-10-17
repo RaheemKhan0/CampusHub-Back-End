@@ -33,6 +33,10 @@ export class ChannelsService {
     }
     return channel.toObject();
   }
+  async findChannel(channelId : string) {
+    const channel = await Channel.findById(channelId);
+    return this.toChannelView(channel);
+  }
 
   async addMember(channelId: string, userId: string) {
     await ChannelAccess.updateOne(

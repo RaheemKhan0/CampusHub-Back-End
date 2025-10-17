@@ -11,9 +11,10 @@ import {
 import { ChannelManageGuard } from 'src/lib/guards/channel-manage-guard';
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
-import { UserAuth } from 'src/lib/decorators/auth-user';
 import { ChannelListResponseDto } from './dto/channel-list.dto';
-import { ApiOkResponse , ApiCreatedResponse} from '@nestjs/swagger';
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { ChannelViewDto } from './dto/channel-view.dto';
 
 @Controller('servers/:serverId/channels')
 export class ChannelsController {
@@ -27,21 +28,31 @@ export class ChannelsController {
 
   @Get()
   @ApiOkResponse({
-    type : ChannelListResponseDto,
-    description : 'returns a channel list visible to the user',
+    type: ChannelListResponseDto,
+    description: 'returns a channel list visible to the user',
   })
   list(
     @Param('serverId') serverId: string,
-    @UserAuth() user: { id: string },
-  )  : Promise<ChannelListResponseDto>{
-    return this.channels.listVisible(user.id, serverId);
+    @Session() session: UserSession,
+  ): Promise<ChannelListResponseDto> {
+    return this.channels.listVisible(session.user.id, serverId);
+  }
+
+  @Get(':channelId')
+  @ApiOkResponse({
+    type: ChannelViewDto,
+    description: 'returns the desired channel',
+  })
+  find(@Param('channelId') channelId: string) {
+    return this.channels.findChannel(channelId);
   }
 
   @Post(':channelId/members')
   @UseGuards(ChannelManageGuard)
- @ApiCreatedResponse({
-    description : "returns when adding a member in ther channel if the channel is hidden",
-  }) 
+  @ApiCreatedResponse({
+    description:
+      'returns when adding a member in ther channel if the channel is hidden',
+  })
   addMembers(
     @Param('channelId') channelId: string,
     @Body() body: { userId: string },
@@ -53,7 +64,7 @@ export class ChannelsController {
   @Delete(':channelId/members/:userId')
   @UseGuards(ChannelManageGuard)
   @ApiOkResponse({
-    description : "this handler deletes a member from the channel"
+    description: 'this handler deletes a member from the channel',
   })
   removeMember(
     @Param('channelId') channelId: string,

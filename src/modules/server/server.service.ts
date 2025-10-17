@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { Server } from 'src/database/schemas/server.schema';
+import { ServerModel } from 'src/database/schemas/server.schema';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { Membership } from 'src/database/schemas/membership.schema';
 import { AppUser } from 'src/database/schemas/user.schema';
@@ -20,7 +20,7 @@ export class ServerService {
     const slug = slugify(dto.name, { lower: true, strict: true });
 
     try {
-      const doc = await Server.create({
+      const doc = await ServerModel.create({
         name: dto.name,
         slug,
         ownerId: ownerId ?? undefined,
@@ -50,7 +50,7 @@ export class ServerService {
         throw new ForbiddenException('Not allowed to edit this server');
       }
     }
-    const server = await Server.findByIdAndUpdate(serverId, dto, { new: true });
+    const server = await ServerModel.findByIdAndUpdate(serverId, dto, { new: true });
     if (!server) throw new NotFoundException('Server not found');
     return server.toObject();
   }
@@ -70,7 +70,7 @@ export class ServerService {
       }
     }
 
-    const server = await Server.findById(serverId).lean();
+    const server = await ServerModel.findById(serverId).lean();
     if (!server) {
       throw new NotFoundException('Server not found');
     }
@@ -88,7 +88,7 @@ export class ServerService {
         throw new ForbiddenException('Not allowed to delete this server');
       }
     }
-    await Server.findByIdAndDelete(serverId);
+    await ServerModel.findByIdAndDelete(serverId);
     await Membership.deleteMany({ serverId }); // cascade
     return { ok: true };
   }
@@ -121,11 +121,11 @@ export class ServerService {
   }: ListServersQueryDto): Promise<ServerListResponseDto> {
     const filter: any = {};
     if (type) filter.type = type;
-    let query = Server.find(filter);
+    let query = ServerModel.find(filter);
 
     if (q && q.trim()) {
       filter.$text = { $search: q.trim() };
-      query = Server.find(filter)
+      query = ServerModel.find(filter)
         .select({ score: { $meta: 'textScore' } })
         .sort({ score: { $meta: 'textScore' }, createdAt: -1 });
     } else {
@@ -136,7 +136,7 @@ export class ServerService {
 
     const [doc, total] = await Promise.all([
       query.skip(skip).limit(pageSize).exec(),
-      Server.countDocuments(filter).exec(),
+      ServerModel.countDocuments(filter).exec(),
     ]);
     const items = doc.map((item) => this.toServerView(item));
     return {

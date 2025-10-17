@@ -3,7 +3,6 @@ import { AppModule } from './modules/app/app.module';
 import morgan from 'morgan';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/betterauth';
-import attachUserSession from './middleware/attach-user-session';
 import { connectDB } from './lib/connectMongodb';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -40,7 +39,6 @@ async function bootstrap() {
   expressApp.use(morgan('dev'));
   // Better Auth routes
   expressApp.all('/api/auth/*splat', toNodeHandler(auth));
-  expressApp.use(attachUserSession);
 
   await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }

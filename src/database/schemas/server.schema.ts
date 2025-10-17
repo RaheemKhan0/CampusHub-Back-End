@@ -41,5 +41,6 @@ ServerSchema.index(
   },
 );
 
-export const Server =
+export const ServerModel =
+
   mongoose.models.Server || mongoose.model<IServer>('Server', ServerSchema);
