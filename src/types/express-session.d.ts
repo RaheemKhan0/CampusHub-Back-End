@@ -1,5 +1,4 @@
 import 'express-serve-static-core';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { Session } from 'src/lib/betterauth';
 
 declare module 'express-serve-static-core' {
