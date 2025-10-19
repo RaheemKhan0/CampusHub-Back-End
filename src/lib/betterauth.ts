@@ -20,6 +20,7 @@ export const auth = betterAuth({
         type: 'boolean',
         required: false,
         defaultValue: false,
+        input: true,
       },
     },
   },
@@ -32,14 +33,14 @@ export const auth = betterAuth({
 
   // Dev stub: print verification link to console
   emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
+    sendVerificationEmail: ({ user, url }) => {
       console.log(`[dev] [betterAuth] Verification for ${user.email}: ${url}`);
     },
   },
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
+        before: (user) => {
           if (process.env.SUPER_USER_EMAIL == user.email.trim().toLowerCase()) {
             return {
               data: {
@@ -54,14 +55,16 @@ export const auth = betterAuth({
   },
 
   hooks: {
-    before: createAuthMiddleware(async (ctx) => {
+    before: createAuthMiddleware((ctx) => {
       // Adjust this path to match your sign-up route if different
       if (ctx.path !== '/sign-up/email') return;
 
-      let email = ctx.body?.email as string | undefined;
-      if (email) {
-        email = email.trim().toLowerCase();
-      }
+      const body = ctx.body as Record<string, unknown> | undefined;
+      const rawEmail = body?.email;
+      const email =
+        typeof rawEmail === 'string'
+          ? rawEmail.trim().toLowerCase()
+          : undefined;
       if (!email) {
         throw new APIError('BAD_REQUEST', { message: 'Email is required' });
       }
@@ -108,3 +111,5 @@ export const auth = betterAuth({
     }),
   },
 });
+
+export type Session = typeof auth.$Infer.Session;

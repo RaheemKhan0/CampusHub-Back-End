@@ -11,7 +11,7 @@ import {
 import { ServerRolesGuard } from 'src/lib/guards/server-role.guard';
 import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
-import { type UserSession , Session } from '@thallesp/nestjs-better-auth';
+import { type UserSession, Session } from '@thallesp/nestjs-better-auth';
 import { ServerRole } from 'src/lib/decorators/server-roles.decorator';
 import { UpdateServerDto } from './dto/update-server.dto';
 import {

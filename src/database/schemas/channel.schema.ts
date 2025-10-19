@@ -1,5 +1,5 @@
 // channels.schema.ts
-import { Schema, Types, Document, model, models } from 'mongoose';
+import { type Model, Schema, Types, Document, model, models } from 'mongoose';
 import { ChannelType, ChannelTypes } from 'src/database/types';
 
 export interface IChannel extends Document {
@@ -41,5 +41,6 @@ const ChannelSchema = new Schema<IChannel>(
 ChannelSchema.index({ serverId: 1, position: 1 });
 ChannelSchema.index({ serverId: 1, name: 1 }, { unique: true }); // optional uniqueness per server
 
-export const Channel =
-  models.Channel || model<IChannel>('Channel', ChannelSchema);
+const existingChannelModel = models.Channel as Model<IChannel> | undefined;
+export const Channel: Model<IChannel> =
+  existingChannelModel ?? model<IChannel>('Channel', ChannelSchema);

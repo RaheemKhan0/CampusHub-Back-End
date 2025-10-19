@@ -1,11 +1,11 @@
-import mongoose, { Schema, Types, Document } from 'mongoose';
+import mongoose, { type Model, Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
   userId: string; // BA user Id
   email: string; // lowercased, unique
   name: string;
   emailVerified: boolean; // must be true to sign in
-  isSuper : boolean;
+  isSuper: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,7 +23,7 @@ const AppUserSchema = new Schema<IUser>(
 
     name: { type: String, required: true },
     emailVerified: { type: Boolean, default: false },
-    isSuper: { type : Boolean, default : false, required : true},
+    isSuper: { type: Boolean, default: false, required: true },
   },
   { timestamps: true },
 );
@@ -38,4 +38,6 @@ AppUserSchema.pre('save', function (next) {
 // Helpful compound index if you’ll often filter by verified users
 AppUserSchema.index({ emailVerified: 1, email: 1 });
 
-export const AppUser = mongoose.model<IUser>('AppUser', AppUserSchema);
+const existingModel = mongoose.models.AppUser as Model<IUser> | undefined;
+export const AppUser: Model<IUser> =
+  existingModel ?? mongoose.model<IUser>('AppUser', AppUserSchema);

@@ -5,7 +5,7 @@ export class ChannelListResponseDto {
   @ApiProperty({
     type: [ChannelViewDto],
     description: 'the public channels for the server',
-    isArray : true,
+    isArray: true,
   })
   publicChannels!: ChannelViewDto[];
 
@@ -23,5 +23,4 @@ export class ChannelListResponseDto {
 
   @ApiProperty({ example: 20 })
   pageSize!: number;
-
 }

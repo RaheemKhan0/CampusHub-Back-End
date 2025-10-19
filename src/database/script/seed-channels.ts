@@ -37,7 +37,7 @@ async function seedChannelsForUnimoduleServers() {
             position: index,
           },
         },
-        upsert : true
+        upsert: true,
       },
     })),
   );

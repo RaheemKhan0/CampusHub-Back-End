@@ -20,7 +20,7 @@ import { MessageViewDto } from './dto/message-view.dto';
 import { MessageListResponseDto } from './dto/message-list-response.dto';
 import { ChannelAccessGuard } from 'src/lib/guards/channel-access-guard';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
-import { Session , type UserSession } from '@thallesp/nestjs-better-auth';
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('messages')
 @Controller('servers/:serverId/channels/:channelId/messages')
@@ -36,7 +36,7 @@ export class MessagesController {
     @Param('serverId') serverId: string,
     @Param('channelId') channelId: string,
     @Body() dto: CreateMessageDto,
-    @Session() session : UserSession,
+    @Session() session: UserSession,
   ): Promise<MessageViewDto> {
     return this.messages.createMessage(
       serverId,

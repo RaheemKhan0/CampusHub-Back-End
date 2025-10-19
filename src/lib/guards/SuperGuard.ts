@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { Request } from 'express';
 
 @Injectable()
 export class SuperGuard implements CanActivate {
@@ -16,8 +17,8 @@ export class SuperGuard implements CanActivate {
       ctx.getClass(),
     ]);
     if (!needsSuper) return true;
-    const req = ctx.switchToHttp().getRequest();
-    if (req.user.isSuper) return true;
+    const req = ctx.switchToHttp().getRequest<Request>();
+    if (req?.user?.isSuper) return true;
     throw new ForbiddenException('Super permissions required');
   }
 }

@@ -5,7 +5,12 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/betterauth';
 import { connectDB } from './lib/connectMongodb';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { Express, Request, Response } from 'express';
+import {
+  SwaggerModule,
+  DocumentBuilder,
+  type OpenAPIObject,
+} from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
@@ -26,20 +31,20 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  app.use('/api-json', (_req, res) => res.json(document));
+  app.use('/api-json', (_req: Request, res: Response) => res.json(document));
 
   app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
   app.enableCors({
     origin: ['http://localhost:3000'],
     credentials: true,
   });
-  const expressApp = app.getHttpAdapter().getInstance();
+  const expressApp = app.getHttpAdapter().getInstance() as Express;
   expressApp.use(morgan('dev'));
-  // Better Auth routes
   expressApp.all('/api/auth/*splat', toNodeHandler(auth));
 
   await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }
-bootstrap();
+
+void bootstrap();

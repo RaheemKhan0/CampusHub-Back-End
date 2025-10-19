@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class CreateAttachmentDto {
@@ -57,7 +64,7 @@ export class CreateMessageDto {
   @ApiProperty({
     description: 'Message Markdown/text content',
     maxLength: 4000,
-    example: 'Remember to review the lecture slides before Friday\'s quiz.',
+    example: "Remember to review the lecture slides before Friday's quiz.",
   })
   @IsString()
   @IsNotEmpty()

@@ -1,5 +1,10 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import { Role, MembershipStatus, MembershipStatusTypes, RoleTypes } from '../types';
+import mongoose, { type Model, Schema, Document, Types } from 'mongoose';
+import {
+  Role,
+  MembershipStatus,
+  MembershipStatusTypes,
+  RoleTypes,
+} from '../types';
 
 export interface IMembership extends Document {
   serverId: Types.ObjectId; // ref: Server._id
@@ -21,7 +26,7 @@ const MembershipSchema = new Schema<IMembership>(
     userId: { type: String, required: true }, // BA user id (string)
     roles: {
       type: [String],
-      enum: RoleTypes as unknown as string[],// << runtime array, not a TS type     
+      enum: RoleTypes as unknown as string[], // << runtime array, not a TS type
       default: ['member'],
       required: true,
     },
@@ -43,5 +48,9 @@ MembershipSchema.index({ serverId: 1, userId: 1 }, { unique: true });
 MembershipSchema.index({ serverId: 1 });
 MembershipSchema.index({ serverId: 1, status: 1 });
 
-
-export const Membership = mongoose.models.Membership || mongoose.model<IMembership>("Membership", MembershipSchema);
+const existingMembershipModel = mongoose.models.Membership as
+  | Model<IMembership>
+  | undefined;
+export const Membership: Model<IMembership> =
+  existingMembershipModel ??
+  mongoose.model<IMembership>('Membership', MembershipSchema);

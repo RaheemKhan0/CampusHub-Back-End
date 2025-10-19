@@ -1,5 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import { IThread } from './thread.schema';
+import mongoose, { type Model, Schema, Document, Types } from 'mongoose';
 
 export interface IAttachment {
   url: string; // storage URL (S3/R2/etc.)
@@ -73,12 +72,21 @@ MessageSchema.pre('validate', function (next) {
   next();
 });
 
-export const Messages =
-  mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);
+const existingMessageModel = mongoose.models.Message as
+  | Model<IMessage>
+  | undefined;
+export const Messages: Model<IMessage> =
+  existingMessageModel ?? mongoose.model<IMessage>('Message', MessageSchema);
 
-export const Attachment =
-  mongoose.models.Attachment ||
+const existingAttachmentModel = mongoose.models.Attachment as
+  | Model<IAttachment>
+  | undefined;
+export const Attachment: Model<IAttachment> =
+  existingAttachmentModel ??
   mongoose.model<IAttachment>('Attachment', AttachmentSchema);
 
-export const Mention =
-  mongoose.models.Mention || mongoose.model<IMention>('Mention', MentionSchema);
+const existingMentionModel = mongoose.models.Mention as
+  | Model<IMention>
+  | undefined;
+export const Mention: Model<IMention> =
+  existingMentionModel ?? mongoose.model<IMention>('Mention', MentionSchema);

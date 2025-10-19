@@ -21,11 +21,11 @@ export class MessageViewDto {
   })
   authorId!: string;
 
- @ApiProperty({
+  @ApiProperty({
     description: 'Name of the Author',
     example: 'Khan',
   })
-  authorName !: string;
+  authorName!: string;
 
   @ApiProperty({
     description: 'Message Markdown/text content',
