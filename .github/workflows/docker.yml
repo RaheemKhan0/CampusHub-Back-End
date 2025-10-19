@@ -2,21 +2,21 @@ name: Campus-API CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]           # run on any branch push
+  pull_request:                # run on any PR
+    branches : ["main"]
 
 permissions:
-  contents : read
-  packages : write
+  contents: read
+  packages: write
 
-concurrency : 
-  group : api-${{ github.ref }}
-  cancel-in-progress : true
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: true
 
-env : 
-  REGISTRY : ghcr.io
-  IMAGE_NAME : ${{ ghcr.repository }}
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-api 
 
 jobs:
   checks:
@@ -28,7 +28,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-    
   docker:
     needs: checks
     runs-on: ubuntu-latest
@@ -40,7 +39,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        # You can pin Buildx/BuildKit versions if needed. :contentReference[oaicite:1]{index=1}
 
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -49,13 +47,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          # GHCR supports GITHUB_TOKEN for auth. :contentReference[oaicite:2]{index=2}
 
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/raheemkhan0/campushub-api
           tags: |
             type=sha
             type=ref,event=branch
@@ -66,6 +63,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          target: prod
           platforms: linux/amd64
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
