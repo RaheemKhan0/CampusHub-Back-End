@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # ---- runtime stage ----
-FROM node:20-alpine
+FROM node:20-alpine AS prod
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
