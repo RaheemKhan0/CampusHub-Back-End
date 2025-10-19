@@ -26,7 +26,7 @@ export class ChannelViewDto {
   name!: string;
 
   @ApiProperty({
-    description: "Channel type",
+    description: 'Channel type',
     enum: ChannelTypes as unknown as string[], // 'text' | 'qa'
     example: 'text',
   })
@@ -59,4 +59,3 @@ export class ChannelViewDto {
   })
   updatedAt!: string;
 }
-

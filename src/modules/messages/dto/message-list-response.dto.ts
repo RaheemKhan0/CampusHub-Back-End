@@ -3,7 +3,8 @@ import { MessageViewDto } from './message-view.dto';
 
 export class MessageListResponseDto {
   @ApiProperty({
-    description: 'Messages ordered chronologically (oldest to newest unless specified)',
+    description:
+      'Messages ordered chronologically (oldest to newest unless specified)',
     type: [MessageViewDto],
     isArray: true,
   })

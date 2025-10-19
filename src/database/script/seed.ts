@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-import { connectDB } from "../../lib/connectMongodb";
-import { ServerModel } from "../schemas/server.schema";
-import { seedServers } from "./seed-server-var";
+import { connectDB } from '../../lib/connectMongodb';
+import { ServerModel } from '../schemas/server.schema';
+import { seedServers } from './seed-server-var';
 
 async function seedServerCollection() {
   await connectDB();
@@ -28,8 +28,14 @@ async function seedServerCollection() {
 
   const result = await Promise.all(operations);
 
-  const upserts = result.reduce((total, op) => total + (op.upsertedCount ?? 0), 0);
-  const modified = result.reduce((total, op) => total + (op.modifiedCount ?? 0), 0);
+  const upserts = result.reduce(
+    (total, op) => total + (op.upsertedCount ?? 0),
+    0,
+  );
+  const modified = result.reduce(
+    (total, op) => total + (op.modifiedCount ?? 0),
+    0,
+  );
 
   console.log(`Seed complete: ${upserts} inserted, ${modified} updated.`);
 }
@@ -38,7 +44,7 @@ async function main() {
   try {
     await seedServerCollection();
   } catch (error) {
-    console.error("Seed failed:", (error as Error).message);
+    console.error('Seed failed:', (error as Error).message);
     process.exitCode = 1;
   } finally {
     await mongoose.connection.close();

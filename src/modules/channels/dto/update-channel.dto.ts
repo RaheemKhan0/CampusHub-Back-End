@@ -11,4 +11,3 @@ export class UpdateChannelDto extends PartialType(CreateChannelDto) {
   @IsIn(['public', 'hidden'])
   privacy?: 'public' | 'hidden';
 }
-

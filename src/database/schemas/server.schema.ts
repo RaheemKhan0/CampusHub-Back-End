@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { type Model, Schema, Document } from 'mongoose';
 import { ServerType, ServerTypes } from '../types';
 
 export interface IServer extends Document {
@@ -41,6 +41,8 @@ ServerSchema.index(
   },
 );
 
-export const ServerModel =
-
-  mongoose.models.Server || mongoose.model<IServer>('Server', ServerSchema);
+const existingServerModel = mongoose.models.Server as
+  | Model<IServer>
+  | undefined;
+export const ServerModel: Model<IServer> =
+  existingServerModel ?? mongoose.model<IServer>('Server', ServerSchema);

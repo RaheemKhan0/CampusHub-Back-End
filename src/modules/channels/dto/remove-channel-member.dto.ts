@@ -4,4 +4,3 @@ export class RemoveChannelMemberDto {
   @IsString()
   userId!: string; // BA user id to revoke
 }
-
