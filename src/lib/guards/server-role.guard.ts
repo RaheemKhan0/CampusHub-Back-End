@@ -8,17 +8,14 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
+import { Session } from '../betterauth';
 import { SERVER_ROLES_KEY } from '../decorators/server-roles.decorator';
 import type { IMembership } from 'src/database/schemas/membership.schema';
 import { Membership } from 'src/database/schemas/membership.schema';
+import { Role } from 'src/database/types';
 
-type ServerRequest = Request<
-  { serverId?: string },
-  any,
-  { serverId?: string }
-> & {
-  user?: UserSession['user'];
+type ServerRequest = Request<{ serverId?: string }> & {
+  user?: Session['user'];
   membership?: Pick<IMembership, 'roles' | 'userId' | 'serverId'>;
 };
 
@@ -27,7 +24,7 @@ export class ServerRolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
-    const required = this.reflector.getAllAndOverride<string[]>(
+    const required = this.reflector.getAllAndOverride<Role[]>(
       SERVER_ROLES_KEY,
       [ctx.getHandler(), ctx.getClass()],
     );
@@ -37,14 +34,7 @@ export class ServerRolesGuard implements CanActivate {
 
     const authUserId = req.user?.id;
     if (!authUserId) throw new ForbiddenException('Unauthenticated');
-
-    const serverIdParam = req.params.serverId;
-    const serverId =
-      serverIdParam ??
-      (typeof req.headers['x-server-id'] === 'string'
-        ? req.headers['x-server-id']
-        : undefined) ??
-      req.body?.serverId;
+    const serverId = req.params?.serverId;
     if (!serverId) throw new NotFoundException('serverId missing');
 
     const membership = await Membership.findOne({

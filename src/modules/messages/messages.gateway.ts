@@ -17,15 +17,13 @@ import {
 } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Types } from 'mongoose';
-import type { LeanDocument } from 'mongoose';
 
 import { MessagesService } from './messages.service';
 import { WsAuthGuard } from 'src/lib/guards/WsAuthGuard';
 import { ChannelTargetDto } from './dto/channel-target.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { MessageViewDto } from './dto/message-view.dto';
-import type { IChannel } from 'src/database/schemas/channel.schema';
-import { Channel } from 'src/database/schemas/channel.schema';
+import { Channel, IChannel } from 'src/database/schemas/channel.schema';
 import type { IMembership } from 'src/database/schemas/membership.schema';
 import { Membership } from 'src/database/schemas/membership.schema';
 import type { IChannelAccess } from 'src/database/schemas/channel-access.schema';
@@ -36,7 +34,6 @@ import { ServerModel } from 'src/database/schemas/server.schema';
 const DEFAULT_ORIGIN = 'http://localhost:3000';
 const channelRoom = (channelId: string) => `channel:${channelId}`;
 
-type ChannelLean = Pick<LeanDocument<IChannel>, '_id' | 'serverId' | 'privacy'>;
 type MembershipRoles = Pick<IMembership, 'roles'>;
 type MembershipId = Pick<IMembership, '_id'>;
 type ChannelAccessLean = Pick<IChannelAccess, '_id'>;
@@ -183,7 +180,7 @@ export class MessagesGateway
     userId: string,
     serverId: string,
     channelId: string,
-  ): Promise<ChannelLean> {
+  ): Promise<IChannel> {
     this.logger.debug(
       `Verifying access for user ${userId} on server ${serverId} channel ${channelId}`,
     );
@@ -206,7 +203,7 @@ export class MessagesGateway
       serverId: serverObjectId,
     })
       .select(['_id', 'serverId', 'privacy'])
-      .lean<ChannelLean | null>();
+      .lean<IChannel>();
 
     if (!server) {
       this.logger.warn(`Server ${serverId} not found for user ${userId}`);
