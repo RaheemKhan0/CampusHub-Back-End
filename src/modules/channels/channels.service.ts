@@ -1,27 +1,10 @@
 // channels.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { Channel } from 'src/database/schemas/channel.schema';
+import { Channel, IChannel } from 'src/database/schemas/channel.schema';
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
 import { CreateChannelDto } from './dto/create-channel.dto';
-import type { ChannelPrivacy } from './dto/create-channel.dto';
 import { ChannelViewDto } from './dto/channel-view.dto';
-import type { ChannelType } from 'src/database/types';
-
-type ChannelDocumentLike = {
-  _id: Types.ObjectId;
-  serverId: Types.ObjectId;
-  name: string;
-  type: ChannelType;
-  position?: number | null;
-  privacy: ChannelPrivacy;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-type ChannelAccessLean = {
-  channelId: Types.ObjectId;
-};
 
 @Injectable()
 export class ChannelsService {
@@ -36,7 +19,7 @@ export class ChannelsService {
       privacy: dto.privacy,
     });
 
-    const channelObject = channel.toObject() as ChannelDocumentLike;
+    const channelObject = channel.toObject() as IChannel;
 
     if (dto.privacy === 'hidden' && dto.memberIds?.length) {
       const docs = dto.memberIds.map((userId) => ({
@@ -58,9 +41,7 @@ export class ChannelsService {
   }
 
   async findChannel(channelId: string): Promise<ChannelViewDto> {
-    const channel = (await Channel.findById(channelId)
-      .lean()
-      .exec()) as ChannelDocumentLike | null;
+    const channel = await Channel.findById(channelId).lean<IChannel>().exec();
     if (!channel) {
       throw new NotFoundException('Channel not found');
     }
@@ -82,7 +63,7 @@ export class ChannelsService {
     return { ok: true } as const;
   }
 
-  private toChannelView(doc: ChannelDocumentLike): ChannelViewDto {
+  private toChannelView(doc: IChannel): ChannelViewDto {
     const toIso = (value: Date | string | undefined): string =>
       new Date(value ?? Date.now()).toISOString();
 
@@ -101,26 +82,26 @@ export class ChannelsService {
   async listVisible(userId: string, serverId: string) {
     const sId = new Types.ObjectId(serverId);
 
-    const publicDocs = (await Channel.find({ serverId: sId, privacy: 'public' })
+    const publicDocs = await Channel.find({ serverId: sId, privacy: 'public' })
       .sort({ position: 1, createdAt: -1 })
-      .lean()
-      .exec()) as ChannelDocumentLike[];
+      .lean<IChannel[]>()
+      .exec();
 
-    const accessDocs = (await ChannelAccess.find({ userId })
+    const accessDocs = await ChannelAccess.find({ userId })
       .select('channelId')
-      .lean()
-      .exec()) as ChannelAccessLean[];
+      .lean<IChannel[]>()
+      .exec();
 
-    const channelIds = accessDocs.map((doc) => doc.channelId);
+    const channelIds = accessDocs.map((doc) => doc._id);
     const privateDocs = channelIds.length
-      ? ((await Channel.find({
+      ? await Channel.find({
           _id: { $in: channelIds },
           serverId: sId,
           privacy: 'hidden',
         })
           .sort({ position: 1, createdAt: -1 })
-          .lean()
-          .exec()) as ChannelDocumentLike[])
+          .lean<IChannel[]>()
+          .exec()
       : [];
 
     const publicChannels = publicDocs.map((doc) => this.toChannelView(doc));

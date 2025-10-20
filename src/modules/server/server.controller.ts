@@ -43,8 +43,8 @@ export class ServerController {
     @Session() session: UserSession,
     @Body() dto: CreateServerDto,
   ) {
-    const doc = await this.servers.create(session.user.id, dto);
-    return this.servers.toServerView(doc);
+    const server = await this.servers.create(session.user.id, dto);
+    return server;
   }
 
   @Get()

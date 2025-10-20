@@ -17,7 +17,6 @@ import {
 } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Types } from 'mongoose';
-import type { LeanDocument } from 'mongoose';
 
 import { MessagesService } from './messages.service';
 import { WsAuthGuard } from 'src/lib/guards/WsAuthGuard';

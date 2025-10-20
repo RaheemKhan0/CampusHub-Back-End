@@ -3,15 +3,28 @@ import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { AppUser } from 'src/database/schemas/user.schema';
-import { openAPI } from 'better-auth/plugins';
+import { customSession, openAPI } from 'better-auth/plugins';
 const mongoUri = process.env.MONGO_URI ?? '';
 export const mongoClient = new MongoClient(mongoUri);
 // Optional: choose DB explicitly via MONGO_DB (otherwise URI's db is used)
 export const db = mongoClient.db();
 
+/* eslint-disable @typescript-eslint/require-await */
 export const auth = betterAuth({
   basePath: '/api/auth',
-  plugins: [openAPI()],
+  plugins: [
+    openAPI(),
+    customSession(async ({ user, session }) => {
+      const isSuper = user.email === process.env.SUPER_USER_EMAIL;
+      return {
+        user: {
+          ...user,
+          isSuper: isSuper,
+        },
+        session,
+      };
+    }),
+  ],
   trustedOrigins: [process.env.CORS_ORIGIN ?? 'http://localhost:3000'],
   database: mongodbAdapter(db),
   user: {
@@ -33,14 +46,14 @@ export const auth = betterAuth({
 
   // Dev stub: print verification link to console
   emailVerification: {
-    sendVerificationEmail: ({ user, url }) => {
+    sendVerificationEmail: async ({ user, url }) => {
       console.log(`[dev] [betterAuth] Verification for ${user.email}: ${url}`);
     },
   },
   databaseHooks: {
     user: {
       create: {
-        before: (user) => {
+        before: async (user) => {
           if (process.env.SUPER_USER_EMAIL == user.email.trim().toLowerCase()) {
             return {
               data: {
@@ -55,7 +68,7 @@ export const auth = betterAuth({
   },
 
   hooks: {
-    before: createAuthMiddleware((ctx) => {
+    before: createAuthMiddleware(async (ctx) => {
       // Adjust this path to match your sign-up route if different
       if (ctx.path !== '/sign-up/email') return;
 
@@ -111,5 +124,7 @@ export const auth = betterAuth({
     }),
   },
 });
+
+/* eslint-enable @typescript-eslint/require-await */
 
 export type Session = typeof auth.$Infer.Session;
