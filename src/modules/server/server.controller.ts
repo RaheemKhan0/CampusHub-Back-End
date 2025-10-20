@@ -72,8 +72,8 @@ export class ServerController {
     @Session() session: UserSession,
     @Param('serverId') serverId: string,
   ) {
-    const doc = await this.servers.findById(serverId, session.user.id);
-    return this.servers.toServerView(doc);
+    const server = await this.servers.findById(serverId, session.user.id);
+    return server;
   }
 
   @Patch(':serverId')
@@ -92,7 +92,7 @@ export class ServerController {
     @Param('serverId') serverId: string,
     @Body() dto: UpdateServerDto,
   ) {
-    const doc = await this.servers.update(serverId, session.user.id, dto);
-    return this.servers.toServerView(doc);
+    const server = await this.servers.update(serverId, session.user.id, dto);
+    return server;
   }
 }
