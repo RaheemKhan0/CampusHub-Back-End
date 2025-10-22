@@ -1,14 +1,10 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import type { Socket } from 'socket.io';
 import { Session } from '../betterauth';
 import { auth } from '../betterauth';
 import { convertIncomingHttpHeaders } from '../utils/convertIncomingHttpHeaders';
+import { Logger } from '@nestjs/common';
 
 type SocketAuthData = {
   session?: Session;
@@ -19,24 +15,17 @@ type AuthedSocket = Socket & { data?: SocketAuthData };
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
-  private readonly logger = new Logger(WsAuthGuard.name);
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient<AuthedSocket>();
-
-    this.logger.debug(`Authenticating websocket client ${client.id}`);
+    const logger = new Logger();
 
     const data = client.data as SocketAuthData | undefined;
     if (data?.session?.user?.id) {
-      this.logger.debug(
-        `Client ${client.id} already authenticated as ${data.session.user.id}`,
-      );
       return true;
     }
 
     const headers = client.handshake?.headers;
     if (!headers) {
-      this.logger.warn(`Missing handshake headers for client ${client.id}`);
       throw new WsException('Unauthorized');
     }
 
@@ -44,19 +33,16 @@ export class WsAuthGuard implements CanActivate {
 
     let session: Session | null = null;
     try {
-      this.logger.debug(`Fetching session for client ${client.id}`);
       session = (await auth.api.getSession({
         headers: convertedHeaders,
       })) as Session | null;
     } catch (error) {
-      this.logger.error(
-        `Session lookup failed for client ${client.id}: ${(error as Error).message}`,
-      );
+      logger.log(error);
+
       throw new WsException('Unauthorized');
     }
 
     if (!session?.user?.id) {
-      this.logger.warn(`No valid session for client ${client.id}`);
       throw new WsException('Unauthorized');
     }
 
@@ -66,10 +52,6 @@ export class WsAuthGuard implements CanActivate {
       user: session.user,
     };
     client.data = socketData;
-
-    this.logger.debug(
-      `Attached session for user ${session.user.id} to client ${client.id}`,
-    );
 
     return true;
   }
