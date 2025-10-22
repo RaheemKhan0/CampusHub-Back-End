@@ -1,8 +1,6 @@
 import {
   ConnectedSocket,
   MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -30,6 +28,7 @@ import type { IChannelAccess } from 'src/database/schemas/channel-access.schema'
 import { ChannelAccess } from 'src/database/schemas/channel-access.schema';
 import type { IServer } from 'src/database/schemas/server.schema';
 import { ServerModel } from 'src/database/schemas/server.schema';
+import { MessageAckDto } from './dto/message-ack.dto';
 
 const DEFAULT_ORIGIN = 'http://localhost:3000';
 const channelRoom = (channelId: string) => `channel:${channelId}`;
@@ -65,9 +64,7 @@ type GatewaySocket = Socket & { data?: { user?: GatewayUser } };
   },
 })
 @Injectable()
-export class MessagesGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class MessagesGateway {
   private readonly logger = new Logger(MessagesGateway.name);
 
   constructor(private readonly messagesService: MessagesService) {}
@@ -76,14 +73,11 @@ export class MessagesGateway
   server!: Server;
 
   handleConnection(client: GatewaySocket) {
-    const user = this.getClientUser(client, false);
-    this.logger.debug(
-      `Client ${client.id} connected${user ? ` as ${user.id}` : ''}`,
-    );
+    this.getClientUser(client, false);
   }
 
   handleDisconnect(client: GatewaySocket) {
-    this.logger.debug(`Client ${client.id} disconnected`);
+    this.logger.debug(`Socket ${client.id} disconnected`);
   }
 
   @SubscribeMessage('channel:join')
@@ -91,10 +85,10 @@ export class MessagesGateway
     @ConnectedSocket() client: GatewaySocket,
     @MessageBody() payload: ChannelTargetDto,
   ) {
-    this.logger.debug(
-      `Client ${client.id} joining server ${payload.serverId} channel ${payload.channelId}`,
-    );
     const user = this.getClientUser(client);
+    this.logger.debug(
+      `User ${user.name ?? user.id} joining server ${payload.serverId} channel ${payload.channelId}`,
+    );
     const channel = await this.ensureChannelAccess(
       user.id,
       payload.serverId,
@@ -103,8 +97,6 @@ export class MessagesGateway
 
     const room = channelRoom(String(channel._id));
     await client.join(room);
-
-    this.logger.debug(`Client ${client.id} joined room ${room}`);
 
     client.emit('channel:joined', {
       serverId: payload.serverId,
@@ -117,18 +109,17 @@ export class MessagesGateway
     @ConnectedSocket() client: GatewaySocket,
     @MessageBody() payload: ChannelTargetDto,
   ) {
-    this.logger.debug(
-      `Client ${client.id} leaving server ${payload.serverId} channel ${payload.channelId}`,
-    );
     const user = this.getClientUser(client);
+    this.logger.debug(
+      `User ${user.name ?? user.id} leaving server ${payload.serverId} channel ${payload.channelId}`,
+    );
     await this.ensureChannelAccess(
       user.id,
       payload.serverId,
       payload.channelId,
     );
-    const room = channelRoom(payload.channelId);
+    const room = channelRoom(String(payload.channelId));
     await client.leave(room);
-    this.logger.debug(`Client ${client.id} left room ${room}`);
     client.emit('channel:left', {
       serverId: payload.serverId,
       channelId: payload.channelId,
@@ -139,32 +130,39 @@ export class MessagesGateway
   async handleMessageCreate(
     @ConnectedSocket() client: GatewaySocket,
     @MessageBody() payload: SendMessageDto,
+    callback?: (response: MessageAckDto) => void,
   ): Promise<MessageViewDto> {
     const user = this.getClientUser(client);
-    this.logger.debug(
-      `Client ${client.id} creating message in server ${payload.serverId}, channel ${payload.channelId}`,
-    );
+
     await this.ensureChannelAccess(
       user.id,
       payload.serverId,
       payload.channelId,
     );
+    try {
+      const message = await this.messagesService.createMessage(
+        payload.serverId,
+        payload.channelId,
+        payload,
+        user.id,
+        user.name ?? payload.authorName,
+      );
 
-    const message = await this.messagesService.createMessage(
-      payload.serverId,
-      payload.channelId,
-      payload,
-      user.id,
-      user.name ?? payload.authorName,
-    );
-
-    const room = channelRoom(payload.channelId);
-    this.logger.debug(
-      `Emitting message ${message.id} to room ${room} from client ${client.id}`,
-    );
-    this.server.to(room).emit('message:created', message);
-
-    return message;
+      const room = channelRoom(String(payload.channelId));
+      this.logger.log(`user : ${user?.name} broadcasted to room : ${room}`);
+      client.broadcast.to(room).emit('message:created', message);
+      if (typeof callback === 'function') {
+        callback({ success: true, message });
+      }
+      return message;
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error('Failed to send message');
+      if (typeof callback === 'function') {
+        callback({ success: false, error: { message: err.message } });
+      }
+      throw error;
+    }
   }
 
   private getClientUser(client: GatewaySocket, enforce = true): GatewayUser {
@@ -181,9 +179,9 @@ export class MessagesGateway
     serverId: string,
     channelId: string,
   ): Promise<IChannel> {
-    this.logger.debug(
-      `Verifying access for user ${userId} on server ${serverId} channel ${channelId}`,
-    );
+    //  this.logger.debug(
+    //    `Verifying access for user ${userId} on server ${serverId} channel ${channelId}`,
+    // );
     if (!Types.ObjectId.isValid(channelId)) {
       this.logger.warn(`Invalid channel id ${channelId}`);
       throw new WsException('Invalid channel id');
