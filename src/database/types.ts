@@ -20,6 +20,18 @@ export const PRIVACY = ['public', 'hidden'] as const;
 export const MembershipStatusTypes = ['active', 'banned', 'left'] as const;
 export type MembershipStatus = (typeof MembershipStatusTypes)[number];
 
+export const DegreeTypes = ['undergraduate'] as const;
+export type DegreeType = (typeof DegreeTypes)[number];
+
+export const YearsUG = [1, 2, 3] as const;
+export type YearUG = (typeof YearsUG)[number];
+
+export const ModuleKinds = ['core', 'elective'] as const;
+export type ModuleKind = (typeof ModuleKinds)[number];
+
+export const Terms = ['firstterm', 'secondterm', 'full-year'] as const;
+export type Term = (typeof Terms)[number];
+
 export const AuditActions = [
   'server.create',
   'server.update',
