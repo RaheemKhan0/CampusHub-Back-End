@@ -8,7 +8,7 @@ export interface IModule extends Document {
   credits?: number; // e.g., 15
   moduleKind: ModuleKind;
   term: Term;
-  slug : string;
+  slug: string;
   createdAt: Date;
   updatedAt: Date;
 }

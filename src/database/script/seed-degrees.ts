@@ -3,8 +3,8 @@ import path from 'path';
 import slugify from 'slugify';
 import mongoose from 'mongoose';
 import { connectDB } from '../../lib/connectMongodb';
-import { Degree } from '../schemas/degree.schema';
-import { Module } from '../schemas/module.schema';
+import { Degree, IDegree } from '../schemas/degree.schema';
+import { IModule, Module } from '../schemas/module.schema';
 import { DegreeModule } from '../schemas/degree-module.schema';
 
 type ModuleSeed = {
@@ -55,7 +55,7 @@ async function main() {
         },
       },
       { upsert: true, new: true },
-    );
+    ).lean<IDegree>();
 
     for (const moduleSeed of entry.modules) {
       const year = parseYear(moduleSeed.year);
@@ -78,8 +78,11 @@ async function main() {
           },
         },
         { upsert: true, new: true },
-      );
+      ).lean<IModule>();
 
+      if (!moduleDoc || !degree) {
+        throw Error(`module and degree not defined`);
+      }
       await DegreeModule.updateOne(
         { degreeId: degree._id, moduleId: moduleDoc._id },
         {
@@ -102,8 +105,8 @@ async function main() {
 }
 
 main()
-  .then(() => mongoose.connection.close())
+  .then(async () => mongoose.connection.close())
   .catch((err) => {
     console.error('Degree seed failed:', err);
-    mongoose.connection.close().finally(() => process.exit(1));
+    void mongoose.connection.close().finally(() => process.exit(1));
   });
