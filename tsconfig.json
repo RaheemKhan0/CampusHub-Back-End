@@ -21,17 +21,14 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "paths" : {
-      "src/*" :   ["src/*"]
-    },
-    "compilerOptions": {
-      "typeRoots": [
-        "./node_modules/@types",
-        "./src/types"
+    "paths": {
+      "src/*": [
+        "src/*"
       ]
     },
-    "include": [
-      "src/**/*"
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
     ]
   }
 }
