@@ -1,4 +1,4 @@
-import mongoose, { type Model, Schema, Document } from 'mongoose';
+import mongoose, { type Model, Schema, Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
   userId: string; // BA user Id
@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name: string;
   emailVerified: boolean; // must be true to sign in
   isSuper: boolean;
+  degreeId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,7 +21,7 @@ const AppUserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
-
+    degreeId: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
     emailVerified: { type: Boolean, default: false },
     isSuper: { type: Boolean, default: false, required: true },

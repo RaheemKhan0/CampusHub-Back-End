@@ -1,11 +1,15 @@
 import { ServerTypes } from '../types';
 
-type SeedServer = {
+export type SeedServer = {
   name: string;
   slug: string;
   type: (typeof ServerTypes)[number];
   icon?: string;
+  degreeSlug?: string;
+  moduleTitle?: string;
 };
+
+export const DEFAULT_DEGREE_SLUG = 'bsc-hons-computer-science';
 
 export const seedServers: SeedServer[] = [
   {

@@ -71,7 +71,7 @@ async function main() {
             createdAt: new Date(),
           },
           $set: {
-            name: moduleSeed.name,
+            title: moduleSeed.name,
             moduleKind: moduleSeed.moduleKind,
             term: moduleSeed.term,
             updatedAt: new Date(),

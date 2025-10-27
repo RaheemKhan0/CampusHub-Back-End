@@ -3,7 +3,7 @@ import { ServerType, ServerTypes } from '../types';
 
 export interface IServer extends Document {
   name: string;
-  degreeModule: Types.ObjectId;
+  degreeModuleId: Types.ObjectId;
   degreeId: Types.ObjectId;
   slug: string; // globally unique (single-tenant)
   ownerId?: string; // BetterAuth user id, optional for system-owned servers
@@ -16,7 +16,11 @@ export interface IServer extends Document {
 const ServerSchema = new Schema<IServer>(
   {
     name: { type: String, required: true, trim: true },
-    degreeModule: { type: Schema.Types.ObjectId, required: true, unique: true },
+    degreeModuleId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+    },
     degreeId: { type: Schema.Types.ObjectId, required: true },
     slug: {
       type: String,
@@ -45,7 +49,7 @@ ServerSchema.index(
   },
 );
 ServerSchema.index(
-  { degreeModule: 1 },
+  { degreeModuleId: 1 },
   { unique: true, name: 'degreeModule_idx' },
 );
 ServerSchema.index({ degreeId: 1 }, { name: 'degreeId_idx' });

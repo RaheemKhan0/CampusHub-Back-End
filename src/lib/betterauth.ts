@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { MongoClient } from 'mongodb';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
-import { AppUser } from 'src/database/schemas/user.schema';
+import { AppUser, IUser } from 'src/database/schemas/user.schema';
 import { customSession, openAPI } from 'better-auth/plugins';
 const mongoUri = process.env.MONGO_URI ?? '';
 export const mongoClient = new MongoClient(mongoUri);
@@ -16,10 +16,12 @@ export const auth = betterAuth({
     openAPI(),
     customSession(async ({ user, session }) => {
       const isSuper = user.email === process.env.SUPER_USER_EMAIL;
+      const appuser = await AppUser.findOne({ userId: user.id }).lean<IUser>();
       return {
         user: {
           ...user,
           isSuper: isSuper,
+          degreeId: appuser?.degreeId,
         },
         session,
       };
@@ -34,6 +36,10 @@ export const auth = betterAuth({
         required: false,
         defaultValue: false,
         input: true,
+      },
+      degreeId: {
+        type: 'string',
+        required: true,
       },
     },
   },
