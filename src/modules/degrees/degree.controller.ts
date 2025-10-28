@@ -27,9 +27,7 @@ export class DegreeController {
   @ApiOperation({ summary: 'Retrieve degree details by slug' })
   @ApiParam({ name: 'slug', type: String })
   @ApiOkResponse({ type: DegreeDetailDto })
-  async getDegree(
-    @Param('slug') slug: string,
-  ): Promise<DegreeDetailDto> {
+  async getDegree(@Param('slug') slug: string): Promise<DegreeDetailDto> {
     return this.degrees.getDegreeBySlug(slug);
   }
 

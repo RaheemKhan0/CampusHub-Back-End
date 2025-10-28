@@ -6,14 +6,14 @@ import {
   DegreeModule as DegreeModuleModel,
   type IDegreeModule,
 } from 'src/database/schemas/degree-module.schema';
-import { Module as ModuleModel, type IModule } from 'src/database/schemas/module.schema';
+import { type IModule } from 'src/database/schemas/module.schema';
 import { DegreeViewDto } from './dto/degree-view.dto';
 import { DegreeDetailDto } from './dto/degree-detail.dto';
 import { DegreeModuleViewDto } from './dto/degree-module-view.dto';
 
-type DegreeModulePopulated = (IDegreeModule & {
+type DegreeModulePopulated = IDegreeModule & {
   moduleId: (IModule & { _id: Types.ObjectId }) | Types.ObjectId;
-});
+};
 
 @Injectable()
 export class DegreeService {
@@ -94,8 +94,6 @@ export class DegreeService {
       kind: doc.kind,
       term: doc.term,
       year: doc.year,
-      order: doc.order ?? 0,
-      notes: doc.notes ?? undefined,
       description: moduleDoc.description ?? undefined,
       credits: moduleDoc.credits ?? undefined,
     };
