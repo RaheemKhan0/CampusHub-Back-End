@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsIn, Length, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsIn,
+  Length,
+  IsUrl,
+  IsMongoId,
+} from 'class-validator';
 import { ServerTypes } from 'src/database/types';
 
 export class CreateServerDto {
@@ -29,4 +36,18 @@ export class CreateServerDto {
   @IsOptional()
   @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   icon?: string;
+
+  @ApiProperty({
+    description: 'Associated degree identifier',
+  })
+  @IsString()
+  @IsMongoId()
+  degreeId!: string;
+
+  @ApiProperty({
+    description: 'Associated degree-module identifier',
+  })
+  @IsString()
+  @IsMongoId()
+  degreeModuleId!: string;
 }
