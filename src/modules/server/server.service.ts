@@ -38,6 +38,8 @@ export class ServerService {
         ownerId: ownerId ?? undefined,
         icon: dto.icon,
         type: dto.type,
+        degreeId: dto.degreeId,
+        degreeModuleId: dto.degreeModuleId,
       });
       return this.toServerView(server);
     } catch (error: unknown) {
@@ -139,6 +141,8 @@ export class ServerService {
       name: doc.name,
       type: doc.type,
       slug: doc.slug,
+      degreeId: String(doc.degreeId),
+      degreeModuleId: String(doc.degreeModuleId),
       createdAt: toIso(doc.createdAt),
       updatedAt: toIso(doc.updatedAt),
     };
