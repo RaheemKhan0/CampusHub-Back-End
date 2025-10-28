@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServerModule } from '../server/server.module';
 import { ChannelModule } from '../channels/channels.module';
 import { MessagesModule } from '../messages/messages.module';
+import { DegreeModule } from '../degrees/degree.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MessagesModule } from '../messages/messages.module';
     ServerModule,
     ChannelModule,
     MessagesModule,
+    DegreeModule,
   ],
   controllers: [AppController],
   providers: [
