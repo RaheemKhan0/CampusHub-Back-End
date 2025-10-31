@@ -10,6 +10,7 @@ import { DegreeService } from './degree.service';
 import { DegreeViewDto } from './dto/degree-view.dto';
 import { DegreeDetailDto } from './dto/degree-detail.dto';
 import { DegreeModuleViewDto } from './dto/degree-module-view.dto';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
 @ApiTags('degrees')
 @Controller('degrees')
@@ -19,6 +20,7 @@ export class DegreeController {
   @Get()
   @ApiOperation({ summary: 'List all degrees' })
   @ApiOkResponse({ type: DegreeViewDto, isArray: true })
+  @AllowAnonymous()
   async listDegrees(): Promise<DegreeViewDto[]> {
     return this.degrees.listDegrees();
   }
