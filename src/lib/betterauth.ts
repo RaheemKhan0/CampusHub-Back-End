@@ -21,7 +21,7 @@ export const auth = betterAuth({
         user: {
           ...user,
           isSuper: isSuper,
-          degreeId: appuser?.degreeId,
+          degreeSlug: appuser?.degreeSlug,
         },
         session,
       };
@@ -35,11 +35,11 @@ export const auth = betterAuth({
         type: 'boolean',
         required: false,
         defaultValue: false,
-        input: true,
       },
-      degreeId: {
+      degreeSlug: {
         type: 'string',
         required: true,
+        input: true,
       },
     },
   },
@@ -123,6 +123,7 @@ export const auth = betterAuth({
             email: user.email,
             name: user.name ?? '',
             isSuper: user?.isSuper,
+            degreeSlug: user?.degreSlug,
           },
         },
         { upsert: true },
