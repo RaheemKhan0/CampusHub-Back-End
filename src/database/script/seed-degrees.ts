@@ -45,6 +45,7 @@ async function main() {
     console.log('slug : ', slug);
 
     const degree = await Degree.findOneAndUpdate(
+      { slug : slug },
       {
         $setOnInsert: { createdAt: new Date() },
         $set: {
@@ -80,7 +81,10 @@ async function main() {
         { upsert: true, new: true },
       ).lean<IModule>();
 
-      if (!moduleDoc || !degree) {
+      console.log('degree : ', degree);
+      console.log('module Doc : ', moduleDoc);
+
+      if (!degree || !moduleDoc) {
         throw Error(`module and degree not defined`);
       }
       await DegreeModule.updateOne(

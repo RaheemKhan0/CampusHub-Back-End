@@ -22,6 +22,7 @@ export const auth = betterAuth({
           ...user,
           isSuper: isSuper,
           degreeSlug: appuser?.degreeSlug,
+          startYear : appuser?.startYear,
         },
         session,
       };
@@ -41,6 +42,11 @@ export const auth = betterAuth({
         required: true,
         input: true,
       },
+      startYear : {
+        type : 'number',
+        required : true,
+        input : true,
+      } 
     },
   },
 
@@ -124,6 +130,7 @@ export const auth = betterAuth({
             name: user.name ?? '',
             isSuper: user?.isSuper,
             degreeSlug: user?.degreSlug,
+            startYear : user?.startYear,
           },
         },
         { upsert: true },

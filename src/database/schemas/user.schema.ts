@@ -7,6 +7,7 @@ export interface IUser extends Document {
   emailVerified: boolean; // must be true to sign in
   isSuper: boolean;
   degreeSlug: string;
+  startYear: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +23,7 @@ const AppUserSchema = new Schema<IUser>(
       index: true,
     },
     degreeSlug: { type: String, required: true },
+    startYear: { type: Number, required: true },
     name: { type: String, required: true },
     emailVerified: { type: Boolean, default: false },
     isSuper: { type: Boolean, default: false, required: true },
