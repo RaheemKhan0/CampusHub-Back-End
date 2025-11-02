@@ -20,6 +20,7 @@ const ServerSchema = new Schema<IServer>(
       type: Schema.Types.ObjectId,
       required: true,
       unique: true,
+      ref : 'DegreeModule',
     },
     degreeId: { type: Schema.Types.ObjectId, required: true },
     slug: {
