@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { type FilterQuery } from 'mongoose';
 import slugify from 'slugify';
@@ -18,6 +19,7 @@ import type { IMembership } from 'src/database/schemas/membership.schema';
 import { Membership } from 'src/database/schemas/membership.schema';
 import type { IUser } from 'src/database/schemas/user.schema';
 import { AppUser } from 'src/database/schemas/user.schema';
+import { DegreeModule } from 'src/database/schemas/degree-module.schema';
 
 type MembershipRoles = Pick<IMembership, 'roles'>;
 
@@ -159,18 +161,70 @@ export class ServerService {
 
   async list({
     q,
+    degreeSlug,
+    degreeId,
+    startYear,
     page,
     pageSize,
     type,
+    paginated,
   }: ListServersQueryDto): Promise<ServerListResponseDto> {
+    const resolvedDegreeId = degreeId;
+    console.log('degree Slug : ', degreeSlug);
+    console.log('start year : ', startYear);
+    console.log('degree type : ', type);
+
     const filter: FilterQuery<IServer> = {};
-    if (type) filter.type = type;
-    let query = ServerModel.find(filter);
+    if (!type) throw new BadRequestException('type of server not provided');
+    filter.type = type;
+    if (resolvedDegreeId) filter.degreeId = resolvedDegreeId;
+
+    if (type === 'unimodules') {
+      if (!resolvedDegreeId) {
+        throw new BadRequestException('degreeId is required for unimodules');
+      }
+      if (startYear === undefined) {
+        throw new BadRequestException('startYear is required for unimodules');
+      }
+
+      const currentYear = new Date().getFullYear();
+      if (startYear > currentYear) {
+        throw new BadRequestException('startYear cannot be in the future');
+      }
+
+      const studentYear = currentYear - startYear + 1;
+      if (studentYear < 1) {
+        throw new BadRequestException('Invalid startYear supplied');
+      }
+
+      const modules = await DegreeModule.find({
+        degreeId: resolvedDegreeId,
+        year: { $lte: studentYear },
+      })
+        .select('_id')
+        .lean();
+
+      const degreeModuleIds = modules.map((item) => item._id);
+      if (degreeModuleIds.length === 0) {
+        return {
+          items: [],
+          total: 0,
+          page,
+          pageSize,
+        };
+      }
+
+      filter.degreeModuleId = { $in: degreeModuleIds };
+    }
+
+    const baseFilter: FilterQuery<IServer> = { ...filter };
+    let query = ServerModel.find(baseFilter);
+    let countFilter: FilterQuery<IServer> = baseFilter;
 
     if (q && q.trim()) {
       const trimmed = q.trim();
-      filter.$text = { $search: trimmed };
-      query = ServerModel.find(filter)
+      countFilter = { ...baseFilter, $text: { $search: trimmed } };
+      query = ServerModel.find(countFilter)
         .select({ score: { $meta: 'textScore' } })
         .sort({ score: { $meta: 'textScore' }, createdAt: -1 });
     } else {
@@ -179,16 +233,30 @@ export class ServerService {
 
     const skip = (page - 1) * pageSize;
 
+    if (paginated) {
+      const [docs, total] = await Promise.all([
+        query.skip(skip).limit(pageSize).lean<IServer[]>().exec(),
+        ServerModel.countDocuments(countFilter).exec(),
+      ]);
+
+      const items = docs.map((item) => this.toServerView(item));
+      return {
+        items,
+        total,
+        page,
+        pageSize,
+      };
+    }
+
     const [docs, total] = await Promise.all([
-      query.skip(skip).limit(pageSize).lean<IServer[]>().exec(),
-      ServerModel.countDocuments(filter).exec(),
+      query.lean<IServer[]>().exec(),
+      ServerModel.countDocuments(countFilter),
     ]);
+
     const items = docs.map((item) => this.toServerView(item));
     return {
       items,
       total,
-      page,
-      pageSize,
     };
   }
 }

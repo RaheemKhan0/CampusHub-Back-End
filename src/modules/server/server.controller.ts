@@ -24,6 +24,7 @@ import {
 import { ServerViewDto } from './dto/server-view.dto';
 import { ListServersQueryDto } from './dto/list-server.query.dto';
 import { ServerListResponseDto } from './dto/server-list.dto';
+import { DegreeSlugPipe } from 'src/lib/pipes/DegreeSlugPipe';
 
 @ApiTags('servers')
 @Controller('servers')
@@ -56,7 +57,7 @@ export class ServerController {
     description: 'Paginated list of servers',
   })
   async listServer(
-    @Query() query: ListServersQueryDto,
+    @Query(new DegreeSlugPipe()) query: ListServersQueryDto,
   ): Promise<ServerListResponseDto> {
     return this.servers.list(query);
   }

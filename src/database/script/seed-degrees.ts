@@ -45,7 +45,7 @@ async function main() {
     console.log('slug : ', slug);
 
     const degree = await Degree.findOneAndUpdate(
-      { slug : slug },
+      { slug: slug },
       {
         $setOnInsert: { createdAt: new Date() },
         $set: {
