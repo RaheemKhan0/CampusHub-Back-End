@@ -1,5 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, Max, Min, IsInt, IsIn } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  IsInt,
+  IsIn,
+  IsMongoId,
+  IsBoolean,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { ServerTypes } from 'src/database/types';
 
 export class ListServersQueryDto {
@@ -7,6 +17,31 @@ export class ListServersQueryDto {
   @IsOptional()
   @IsString()
   q?: string;
+
+  @ApiPropertyOptional({ description: 'Degree slug' })
+  @IsOptional()
+  @IsString()
+  degreeSlug?: string;
+
+  @ApiPropertyOptional({ description: 'Degree identifier' })
+  @IsOptional()
+  @IsMongoId()
+  degreeId?: string;
+
+  @ApiPropertyOptional({ description: 'Student start year (calendar year)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1900)
+  @Max(2100)
+  startYear?: number;
+
+  @ApiPropertyOptional({
+    description: 'Boolean value to indicate if the query is paginated or not',
+  })
+  @IsBoolean()
+  @IsOptional()
+  paginated?: boolean;
 
   @ApiPropertyOptional({ default: 1, minimum: 1 })
   @IsOptional()
@@ -28,5 +63,5 @@ export class ListServersQueryDto {
   })
   @IsOptional()
   @IsIn(ServerTypes as unknown as string[])
-  type?: string;
+  type?: (typeof ServerTypes)[number];
 }

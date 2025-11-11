@@ -273,6 +273,77 @@
           "term": "fullterm"
         }
       ]
+    },
+    {
+      "degree_title": "BSc (Hons) Mathematics",
+      "level": "Undergraduate",
+      "school": "School of Science & Technology",
+      "durationYears": 3,
+      "modules": [
+        {
+          "year": "Year 1",
+          "code": null,
+          "name": "Functions, Vectors and Calculus 1",
+          "moduleKind": "core",
+          "term": "firstterm"
+        },
+        {
+          "year": "Year 1",
+          "code": null,
+          "name": "Linear Algebra",
+          "moduleKind": "core",
+          "term": "secondterm"
+        },
+        {
+          "year": "Year 1",
+          "code": null,
+          "name": "Introduction to Probability and Statistics",
+          "moduleKind": "core",
+          "term": "fullterm"
+        },
+        {
+          "year": "Year 2",
+          "code": null,
+          "name": "Real Analysis",
+          "moduleKind": "core",
+          "term": "firstterm"
+        },
+        {
+          "year": "Year 2",
+          "code": null,
+          "name": "Vector Calculus",
+          "moduleKind": "core",
+          "term": "secondterm"
+        },
+        {
+          "year": "Year 2",
+          "code": null,
+          "name": "Programming and Data Science for the Professions",
+          "moduleKind": "elective",
+          "term": "fullterm"
+        },
+        {
+          "year": "Year 3",
+          "code": null,
+          "name": "Complex Analysis",
+          "moduleKind": "elective",
+          "term": "firstterm"
+        },
+        {
+          "year": "Year 3",
+          "code": null,
+          "name": "Graph Theory",
+          "moduleKind": "elective",
+          "term": "secondterm"
+        },
+        {
+          "year": "Year 3",
+          "code": null,
+          "name": "Group Project",
+          "moduleKind": "core",
+          "term": "fullterm"
+        }
+      ]
     }
   ]
 }

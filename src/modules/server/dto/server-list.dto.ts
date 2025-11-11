@@ -12,8 +12,8 @@ export class ServerListResponseDto {
   total!: number;
 
   @ApiProperty({ example: 1 })
-  page!: number;
+  page?: number;
 
   @ApiProperty({ example: 20 })
-  pageSize!: number;
+  pageSize?: number;
 }
