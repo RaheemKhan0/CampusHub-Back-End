@@ -5,8 +5,8 @@ import { ListServersQueryDto } from 'src/modules/server/dto/list-server.query.dt
 @Injectable()
 export class DegreeSlugPipe implements PipeTransform {
   async transform(value: ListServersQueryDto) {
+    console.log('[Degree Slug Pipe ] query : ', value);
     if (!value?.degreeSlug || value.degreeId) {
-      console.log('[Degree Slug Pipe ] query : ', value);
       return value;
     }
     const degree = await Degree.findOne({ slug: value.degreeSlug })
